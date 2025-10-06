@@ -23,6 +23,7 @@ const Settings: React.FC = () => {
   const [loadExternalMCPConfigs, setLoadExternalMCPConfigs] =
     useState<boolean>(true);
   const [analyticsEnabled, setAnalyticsEnabled] = useState<boolean>(true);
+  const [autoUpdateEnabled, setAutoUpdateEnabled] = useState<boolean>(true);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
   // Zustand stores
@@ -71,6 +72,7 @@ const Settings: React.FC = () => {
         const settings = await platformAPI.settings.get();
         setLoadExternalMCPConfigs(settings.loadExternalMCPConfigs ?? true);
         setAnalyticsEnabled(settings.analyticsEnabled ?? true);
+        setAutoUpdateEnabled(settings.autoUpdateEnabled ?? true);
       } catch {
         // Ignore error and use default value
         console.log("Failed to load settings, using defaults");
@@ -166,6 +168,26 @@ const Settings: React.FC = () => {
       console.error("Failed to save analytics settings:", error);
       // Revert on error
       setAnalyticsEnabled(!checked);
+    } finally {
+      setIsSavingSettings(false);
+    }
+  };
+
+  // Handle auto update toggle
+  const handleAutoUpdateToggle = async (checked: boolean) => {
+    setAutoUpdateEnabled(checked);
+    setIsSavingSettings(true);
+
+    try {
+      const currentSettings = await platformAPI.settings.get();
+      await platformAPI.settings.save({
+        ...currentSettings,
+        autoUpdateEnabled: checked,
+      });
+    } catch (error) {
+      console.error("Failed to save auto update settings:", error);
+      // Revert on error
+      setAutoUpdateEnabled(!checked);
     } finally {
       setIsSavingSettings(false);
     }
@@ -415,6 +437,21 @@ const Settings: React.FC = () => {
             <Switch
               checked={analyticsEnabled}
               onCheckedChange={handleAnalyticsToggle}
+              disabled={isSavingSettings}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <label className="text-sm font-medium">
+                {t("settings.autoUpdate")}
+              </label>
+              <p className="text-xs text-muted-foreground">
+                {t("settings.autoUpdateDescription")}
+              </p>
+            </div>
+            <Switch
+              checked={autoUpdateEnabled}
+              onCheckedChange={handleAutoUpdateToggle}
               disabled={isSavingSettings}
             />
           </div>

@@ -37,6 +37,12 @@ export interface AppSettings {
    * デフォルト: true
    */
   analyticsEnabled?: boolean;
+
+  /**
+   * 自動アップデートを有効化するか
+   * デフォルト: true
+   */
+  autoUpdateEnabled?: boolean;
 }
 
 /**
@@ -49,4 +55,5 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   packageManagerOverlayDisplayCount: 0,
   loadExternalMCPConfigs: true,
   analyticsEnabled: true,
+  autoUpdateEnabled: true,
 };

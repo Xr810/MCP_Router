@@ -219,7 +219,9 @@
     "loadExternalMCPConfigs": "Load MCP configurations from external applications",
     "loadExternalMCPConfigsDescription": "Allow MCP Router to import server configurations from other applications like Claude for Desktop",
     "analytics": "Send usage analytics",
-    "analyticsDescription": "Send anonymous usage data to help improve the app"
+    "analyticsDescription": "Send anonymous usage data to help improve the app",
+    "autoUpdate": "Enable automatic updates",
+    "autoUpdateDescription": "Automatically download and install app updates"
   },
   "agents": {
     "title": "Agents",

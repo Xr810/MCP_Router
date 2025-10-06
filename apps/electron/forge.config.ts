@@ -10,22 +10,43 @@ import { mainConfig } from "./webpack.main.config";
 import { rendererConfig } from "./webpack.renderer.config";
 import { MakerDMG } from "@electron-forge/maker-dmg";
 import * as path from "path";
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
+
+
+const isMac = process.platform === "darwin";
+const hasSignIdentity = !!process.env.PUBLIC_IDENTIFIER;
+const hasNotarizeCreds = !!(
+  process.env.APPLE_API_KEY &&
+  process.env.APPLE_API_KEY_ID &&
+  process.env.APPLE_API_ISSUER
+);
 
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
     icon: "./public/images/icon/icon",
-    osxSign: {
-      identity: process.env.PUBLIC_IDENTIFIER,
-    },
-    osxNotarize: {
-      appleApiKey: process.env.APPLE_API_KEY || "",
-      appleApiKeyId: process.env.APPLE_API_KEY_ID || "",
-      appleApiIssuer: process.env.APPLE_API_ISSUER || "",
-    },
+    // Support both Intel and Apple Silicon architectures - use target arch from env
+    arch: (process.env.npm_config_target_arch as any) || process.arch,
+    // Only sign/notarize on macOS when credentials are available (CI-safe)
+    osxSign: isMac && hasSignIdentity
+      ? {
+          identity: process.env.PUBLIC_IDENTIFIER,
+        }
+      : undefined,
+    osxNotarize: isMac && hasNotarizeCreds
+      ? {
+          appleApiKey: process.env.APPLE_API_KEY || "",
+          appleApiKeyId: process.env.APPLE_API_KEY_ID || "",
+          appleApiIssuer: process.env.APPLE_API_ISSUER || "",
+        }
+      : undefined,
   },
-  rebuildConfig: {},
+  rebuildConfig: {
+    // Force rebuild native modules for the target architecture
+    arch: (process.env.npm_config_target_arch as any) || process.arch,
+  },
   makers: [
     new MakerSquirrel({
       name: "MCP-Router",

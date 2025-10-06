@@ -12,7 +12,11 @@
     "start": "electron-forge start",
     "dev": "electron-forge start --enable-logging",
     "package": "cross-env NODE_ENV=production electron-forge package",
+    "package:x64": "cross-env NODE_ENV=production npm_config_target_arch=x64 electron-forge package",
+    "package:arm64": "cross-env NODE_ENV=production npm_config_target_arch=arm64 electron-forge package",
     "make": "cross-env NODE_ENV=production electron-forge make",
+    "make:x64": "cross-env NODE_ENV=production npm_config_target_arch=x64 npm_config_target_platform=darwin npm_config_arch=x64 electron-forge make --arch=x64",
+    "make:arm64": "cross-env NODE_ENV=production npm_config_target_arch=arm64 npm_config_target_platform=darwin npm_config_arch=arm64 electron-forge make --arch=arm64",
     "publish": "cross-env NODE_ENV=production electron-forge publish",
     "lint": "eslint --ext .ts,.tsx .",
     "lint:fix": "eslint --ext .ts,.tsx . --fix",
@@ -22,9 +26,11 @@
     "knip": "cd ../.. && knip --workspace apps/electron",
     "postinstall": "electron-rebuild",
     "rebuild": "electron-rebuild",
-    "test:e2e": "pnpm make && cp package.json .webpack/arm64/main/ && playwright test --config=e2e/playwright-electron.config.ts",
+    "rebuild:x64": "cross-env npm_config_target_arch=x64 npm_config_arch=x64 electron-rebuild --arch=x64",
+    "rebuild:arm64": "cross-env npm_config_target_arch=arm64 npm_config_arch=arm64 electron-rebuild --arch=arm64",
+    "test:e2e": "pnpm make && node -e \"const os=require('os');const arch=os.arch()==='x64'?'x64':(os.arch()==='arm64'?'arm64':'');if(!arch){process.exit(1)};console.log('Using arch',arch);\" && node -e \"const fs=require('fs');const os=require('os');const arch=os.arch()==='x64'?'x64':(os.arch()==='arm64'?'arm64':'');fs.cpSync('package.json', `.webpack/${arch}/main/`);\" && playwright test --config=e2e/playwright-electron.config.ts",
     "test:e2e:only": "playwright test --config=e2e/playwright-electron.config.ts",
-    "test:e2e:headed": "pnpm make && cp package.json .webpack/arm64/main/ && playwright test --config=e2e/playwright-electron.config.ts --headed"
+    "test:e2e:headed": "pnpm make && node -e \"const os=require('os');const arch=os.arch()==='x64'?'x64':(os.arch()==='arm64'?'arm64':'');if(!arch){process.exit(1)};console.log('Using arch',arch);\" && node -e \"const fs=require('fs');const os=require('os');const arch=os.arch()==='x64'?'x64':(os.arch()==='arm64'?'arm64':'');fs.cpSync('package.json', `.webpack/${arch}/main/`);\" && playwright test --config=e2e/playwright-electron.config.ts --headed"
   },
   "dependencies": {
     "@ai-sdk/react": "^1.2.12",
