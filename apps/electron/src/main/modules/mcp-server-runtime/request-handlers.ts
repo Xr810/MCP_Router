@@ -15,7 +15,14 @@ import { RequestHandlerBase } from "./request-handler-base";
  */
 export class RequestHandlers extends RequestHandlerBase {
   private originalProtocols: Map<string, string> = new Map();
-  private toolNameToServerMap: Map<string, string> = new Map();
+  private toolRoutingMap: Map<
+    string,
+    {
+      serverName: string;
+      originalName: string;
+    }
+  > = new Map();
+  private legacyToolNameToServerMap: Map<string, string> = new Map();
   private serverStatusMap: Map<string, boolean>;
   private servers: Map<string, MCPServer>;
   private clients: Map<string, Client>;
@@ -60,15 +67,12 @@ export class RequestHandlers extends RequestHandlerBase {
     const toolName = request.params.name;
 
     // Get server name and original tool name
-    const mappedServerName = this.getServerNameForTool(toolName);
-    if (!mappedServerName) {
-      throw new McpError(
-        ErrorCode.InvalidRequest,
-        `Could not determine server for tool: ${toolName}`,
-      );
-    }
-    const serverName = mappedServerName;
-    const originalToolName = toolName;
+    const routingInfo = this.toolRoutingMap.get(toolName);
+    const serverName =
+      routingInfo?.serverName ||
+      this.legacyToolNameToServerMap.get(toolName) ||
+      "Agent Tools";
+    const originalToolName = routingInfo?.originalName || toolName;
 
     const token = request.params._meta?.token as string | undefined;
 
@@ -127,6 +131,8 @@ export class RequestHandlers extends RequestHandlerBase {
    * Get all tools from all servers (internal implementation)
    */
   private async getAllToolsInternal(): Promise<any[]> {
+    this.toolRoutingMap.clear();
+    this.legacyToolNameToServerMap.clear();
     const allTools: any[] = [];
 
     // Add tools from running servers
@@ -147,14 +153,23 @@ export class RequestHandlers extends RequestHandlerBase {
         }
 
         for (const tool of tools.tools) {
+          const aggregatedName = this.buildAggregatedToolName(
+            serverName,
+            serverId,
+            tool.name,
+          );
           const toolWithSource = {
             ...tool,
-            name: tool.name,
+            name: aggregatedName,
             sourceServer: serverName,
           };
 
           // Store the mapping
-          this.toolNameToServerMap.set(tool.name, serverName);
+          this.toolRoutingMap.set(aggregatedName, {
+            serverName,
+            originalName: tool.name,
+          });
+          this.legacyToolNameToServerMap.set(tool.name, serverName);
 
           allTools.push(toolWithSource);
         }
@@ -522,11 +537,45 @@ export class RequestHandlers extends RequestHandlerBase {
     );
   }
 
+  private buildAggregatedToolName(
+    serverName: string,
+    serverId: string,
+    toolName: string,
+  ): string {
+    const serverSlug =
+      this.slugify(serverName) || this.slugify(serverId) || "server";
+    const baseName = `mcp-router__${serverSlug}__${toolName}`;
+
+    if (!this.toolRoutingMap.has(baseName)) {
+      return baseName;
+    }
+
+    let counter = 2;
+    let candidate = `${baseName}__${counter}`;
+    while (this.toolRoutingMap.has(candidate)) {
+      counter += 1;
+      candidate = `${baseName}__${counter}`;
+    }
+
+    return candidate;
+  }
+
+  private slugify(value: string): string {
+    return value
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }
+
   /**
    * Get server name for a given tool
    */
   public getServerNameForTool(toolName: string): string | undefined {
-    return this.toolNameToServerMap.get(toolName) || "Agent Tools";
+    return (
+      this.toolRoutingMap.get(toolName)?.serverName ||
+      this.legacyToolNameToServerMap.get(toolName) ||
+      "Agent Tools"
+    );
   }
 
   /**
