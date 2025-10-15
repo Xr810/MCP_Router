@@ -132,6 +132,64 @@ npx -y @mcp_router/cli@latest connect`}
   );
 };
 
+// Chinese version component
+const HowToUseZH: React.FC<HowToUseProps> = ({ token }) => {
+  return (
+    <>
+      {/* CLI 使用 */}
+      <div className="mb-6">
+        <h4 className="text-md font-semibold mb-3">1. 通过 CLI 使用</h4>
+        <p className="mb-3 text-muted-foreground">
+          {token
+            ? "将令牌设置为环境变量后连接 MCP Router："
+            : "使用 @mcp_router/cli 建立连接："}
+        </p>
+        <div className="overflow-x-auto w-full">
+          <pre className="bg-muted p-4 rounded-lg text-xs whitespace-pre min-w-min w-max">
+            {token
+              ? `# 将令牌导出为环境变量
+export MCPR_TOKEN="${token}"
+
+# 使用 mcpr-cli 连接
+npx -y @mcp_router/cli@latest connect`
+              : `# 使用 mcpr-cli 连接
+npx -y @mcp_router/cli@latest connect`}
+          </pre>
+        </div>
+      </div>
+
+      {/* 配置文件使用 */}
+      <div className="mb-6">
+        <h4 className="text-md font-semibold mb-3">
+          2. 在 MCP 服务器配置中使用
+        </h4>
+        <p className="mb-3 text-muted-foreground">
+          将以下内容加入您的 MCP 服务器配置文件：
+        </p>
+        <div className="overflow-x-auto w-full">
+          <pre className="bg-muted p-4 rounded-lg text-xs whitespace-pre min-w-min w-max">
+            {`{
+  "mcpServers": {
+    "mcp-router": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@mcp_router/cli@latest",
+        "connect"
+      ],
+      "env": {
+        "MCPR_TOKEN": "${token}"
+      }
+    }
+  }
+}`}
+          </pre>
+        </div>
+      </div>
+    </>
+  );
+};
+
 // Main component that switches based on language
 const HowToUse = forwardRef<HowToUseHandle, HowToUseProps>(({ token }, ref) => {
   const { t, i18n } = useTranslation();
@@ -142,8 +200,10 @@ const HowToUse = forwardRef<HowToUseHandle, HowToUseProps>(({ token }, ref) => {
   }));
 
   const content =
-    i18n.language === "ja" ? (
+    i18n.language.startsWith("ja") ? (
       <HowToUseJA token={token} />
+    ) : i18n.language.startsWith("zh") ? (
+      <HowToUseZH token={token} />
     ) : (
       <HowToUseEN token={token} />
     );

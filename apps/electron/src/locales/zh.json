@@ -216,6 +216,8 @@
     "communityDescription": "加入我们的 Discord 社区获取支持、分享反馈并与其他用户交流。",
     "joinDiscord": "加入 Discord 社区",
     "advanced": "高级设置",
+    "autoUpdate": "启用自动更新",
+    "autoUpdateDescription": "自动下载并安装应用更新",
     "loadExternalMCPConfigs": "从外部应用程序加载 MCP 配置",
     "loadExternalMCPConfigsDescription": "允许 MCP Router 从其他应用程序（如 Claude for Desktop）导入服务器配置",
     "analytics": "发送使用情况分析",
