@@ -23,8 +23,6 @@ export {
   ServerAPI,
   ServerStatus,
   CreateServerInput,
-  // Agent API
-  AgentAPI,
   // App API
   AppAPI,
   // Package API
@@ -46,6 +44,5 @@ export { LogEntry as PlatformLogEntry } from "./platform-api";
 export * from "./mcp-apps";
 export * from "./utils";
 export * from "./cli";
-export * from "./chat-types";
 export * from "./workflow-types";
 export * from "./shared-config";
