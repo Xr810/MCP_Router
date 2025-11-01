@@ -1,9 +1,11 @@
 import { ipcMain, dialog, BrowserWindow } from "electron";
 import { MCPServerConfig, CreateServerInput } from "@mcp_router/shared";
 import { processDxtFile } from "@/main/modules/mcp-server-manager/dxt-processor/dxt-processor";
+import type { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
 
-export function setupMcpServerHandlers(): void {
-  const getMCPServerManager = () => (global as any).getMCPServerManager();
+export function setupMcpServerHandlers(
+  getMCPServerManager: () => MCPServerManager,
+): void {
 
   ipcMain.handle("mcp:list", () => {
     const mcpServerManager = getMCPServerManager();
@@ -70,6 +72,19 @@ export function setupMcpServerHandlers(): void {
       const mcpServerManager = getMCPServerManager();
       const result = mcpServerManager.updateServer(id, config);
       return result;
+    },
+  );
+
+  ipcMain.handle("mcp:list-tools", async (_, id: string) => {
+    const mcpServerManager = getMCPServerManager();
+    return await mcpServerManager.listServerTools(id);
+  });
+
+  ipcMain.handle(
+    "mcp:update-tool-permissions",
+    (_, id: string, permissions: Record<string, boolean>) => {
+      const mcpServerManager = getMCPServerManager();
+      return mcpServerManager.updateServerToolPermissions(id, permissions);
     },
   );
 
