@@ -254,6 +254,7 @@
     "deleteFailed": "Failed to delete app"
   },
   "serverDetails": {
+    "settings": "Settings",
     "configuration": "Configuration",
     "serverName": "Server Name",
     "finalCommand": "Execution Command",
@@ -341,14 +342,21 @@
     "autoStart": "Auto Start",
     "autoStartToggleLabel": "Enable auto-start"
   },
-  "server": {
-    "status": {
-      "running": "Running",
-      "stopped": "Stopped",
-      "starting": "Starting",
-      "stopping": "Stopping",
-      "error": "Error"
-    }
+  "projects": {
+    "sectionTitle": "Projects",
+    "all": "All",
+    "unassigned": "Unassigned",
+    "new": "New project name",
+    "create": "Create",
+    "creating": "Creating...",
+    "projectSettings": "Project Settings",
+    "projectSettingsDescription": "Organize your servers by managing projects."
+  },
+  "serverSettings": {
+    "title": "Server Settings",
+    "project": "Project",
+    "manageProjects": "Manage Projects",
+    "delete": "Delete Server"
   },
   "importFromJson": {
     "title": "Import from JSON",

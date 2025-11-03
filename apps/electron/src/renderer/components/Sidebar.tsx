@@ -6,13 +6,11 @@ import {
   IconActivity,
   IconDeviceDesktop,
   IconDownload,
-  IconFileText,
-  IconWebhook,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { useWorkspaceStore } from "@/renderer/stores";
 import { usePlatformAPI } from "@/renderer/platform-api";
-// @ts-ignore
+// @ts-expect-error: Webpack file-loader provides typing for image assets at runtime
 import iconImage from "../../../public/images/icon/icon.png";
 import {
   Sidebar,
@@ -83,7 +81,7 @@ const SidebarComponent: React.FC = () => {
       } else {
         toast.error(t("feedback.failed"));
       }
-    } catch (error) {
+    } catch {
       toast.error(t("feedback.failed"));
     } finally {
       setIsSendingFeedback(false);
@@ -192,6 +190,7 @@ const SidebarComponent: React.FC = () => {
               </CollapsibleContent>
             </SidebarGroup>
           </Collapsible>
+          {/* Projects filter removed */}
         </SidebarMenu>
       </SidebarContent>
 

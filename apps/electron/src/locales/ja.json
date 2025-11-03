@@ -59,15 +59,7 @@
     "error": "エラー",
     "success": "成功"
   },
-  "server": {
-    "status": {
-      "running": "実行中",
-      "stopped": "停止",
-      "starting": "起動中",
-      "stopping": "停止中",
-      "error": "エラー"
-    }
-  },
+  
   "logs": {
     "title": "ログ",
     "filter": "フィルター",
@@ -263,6 +255,7 @@
     "deleteFailed": "カスタムアプリの削除に失敗しました"
   },
   "serverDetails": {
+    "settings": "設定",
     "configuration": "設定",
     "serverName": "サーバー名",
     "finalCommand": "実行コマンド",
@@ -349,6 +342,22 @@
     "commandNotFound": "コマンドがインストールされていません。サーバの起動に失敗する可能性があります。",
     "autoStart": "自動起動",
     "autoStartToggleLabel": "自動起動を有効にする"
+  },
+  "projects": {
+    "sectionTitle": "プロジェクト",
+    "all": "すべて",
+    "unassigned": "未割り当て",
+    "new": "新規プロジェクト名",
+    "create": "作成",
+    "creating": "作成中...",
+    "projectSettings": "プロジェクト設定",
+    "projectSettingsDescription": "プロジェクトを管理してサーバーを整理します。"
+  },
+  "serverSettings": {
+    "title": "サーバー設定",
+    "project": "プロジェクト",
+    "manageProjects": "プロジェクトを管理",
+    "delete": "サーバーを削除"
   },
   "locale": "ja-JP",
   "importFromJson": {

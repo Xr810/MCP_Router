@@ -34,10 +34,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   updateMcpServerConfig: (id: string, config: any) =>
     ipcRenderer.invoke("mcp:update-config", id, config),
   listMcpServerTools: (id: string) => ipcRenderer.invoke("mcp:list-tools", id),
-  updateToolPermissions: (
-    id: string,
-    permissions: Record<string, boolean>,
-  ) => ipcRenderer.invoke("mcp:update-tool-permissions", id, permissions),
+  updateToolPermissions: (id: string, permissions: Record<string, boolean>) =>
+    ipcRenderer.invoke("mcp:update-tool-permissions", id, permissions),
 
   // Package Version Resolution
   resolvePackageVersionsInArgs: (
@@ -168,4 +166,12 @@ contextBridge.exposeInMainWorld("electronAPI", {
       ipcRenderer.removeListener("workspace:switched", listener);
     };
   },
+
+  // Projects Management
+  listProjects: () => ipcRenderer.invoke("project:list"),
+  createProject: (input: { name: string }) =>
+    ipcRenderer.invoke("project:create", input),
+  updateProject: (id: string, updates: { name?: string }) =>
+    ipcRenderer.invoke("project:update", id, updates),
+  deleteProject: (id: string) => ipcRenderer.invoke("project:delete", id),
 });

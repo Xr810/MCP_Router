@@ -254,6 +254,7 @@
     "deleteFailed": "应用删除失败"
   },
   "serverDetails": {
+    "settings": "设置",
     "configuration": "配置",
     "serverName": "服务器名称",
     "finalCommand": "执行命令",
@@ -341,14 +342,21 @@
     "autoStart": "自动启动",
     "autoStartToggleLabel": "启用自动启动"
   },
-  "server": {
-    "status": {
-      "running": "运行中",
-      "stopped": "已停止",
-      "starting": "启动中",
-      "stopping": "停止中",
-      "error": "错误"
-    }
+  "projects": {
+    "sectionTitle": "项目",
+    "all": "全部",
+    "unassigned": "未分配",
+    "new": "新项目名称",
+    "create": "创建",
+    "creating": "正在创建...",
+    "projectSettings": "项目设置",
+    "projectSettingsDescription": "通过管理项目来组织服务器。"
+  },
+  "serverSettings": {
+    "title": "服务器设置",
+    "project": "项目",
+    "manageProjects": "管理项目",
+    "delete": "删除服务器"
   },
   "importFromJson": {
     "title": "从 JSON 导入",
