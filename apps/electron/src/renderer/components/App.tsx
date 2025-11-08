@@ -113,6 +113,15 @@ const App: React.FC = () => {
     refreshServers();
   }, [refreshServers]);
 
+  // Simple polling: refresh server list every 3 seconds
+  useEffect(() => {
+    const id = setInterval(() => {
+      // Ignore errors to keep polling resilient
+      refreshServers().catch(() => {});
+    }, 3000);
+    return () => clearInterval(id);
+  }, [refreshServers]);
+
   // Loading indicator component to reuse
   const LoadingIndicator = () => (
     <div className="flex h-full items-center justify-center bg-content-light">

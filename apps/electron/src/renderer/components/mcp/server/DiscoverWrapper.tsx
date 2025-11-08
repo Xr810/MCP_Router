@@ -1,17 +1,38 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@mcp_router/ui";
 import Manual from "./Manual";
-import { useWorkspaceStore } from "@/renderer/stores";
 
 const DiscoverWrapper: React.FC = () => {
   const { t } = useTranslation();
-  const { currentWorkspace } = useWorkspaceStore();
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-bold mb-4 text-center">
-        {t("discoverServers.title")}
-      </h2>
+      {/* Breadcrumbs: Servers > Add */}
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/servers">{t("serverList.title")}</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{t("discoverServers.title")}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
+      {/* Page title */}
+      <h1 className="text-3xl font-bold">{t("discoverServers.title")}</h1>
       <Manual />
     </div>
   );
