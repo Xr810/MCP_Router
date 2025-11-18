@@ -253,11 +253,11 @@ export async function extractConfigInfo(
     const configKind = definition?.configKind ?? "standard-json";
 
     const config =
-      configKind === "codex-toml"
+      configKind === "codex"
         ? { mcpServers: parseCodexTomlServers(fileContent) }
         : JSON.parse(fileContent);
 
-    let hasMcpConfig = false;
+    let hasMcpConfig;
     let configToken = "";
     let otherServers: MCPServerConfig[] = [];
 
@@ -282,7 +282,7 @@ export async function extractConfigInfo(
         }
         break;
       }
-      case "codex-toml": {
+      case "codex": {
         const servers = (config as any).mcpServers || {};
         const mcpr = servers["mcp-router"] || servers["mcp_router"];
         const argsArr = mcpr?.args;
