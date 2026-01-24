@@ -30,43 +30,41 @@
     "title": "MCP Router"
   },
   "logs": {
+    "activity": {
+      "title": "Activity",
+      "heatmap": {
+        "title": "Activity Heatmap",
+        "sun": "Sun",
+        "mon": "Mon",
+        "tue": "Tue",
+        "wed": "Wed",
+        "thu": "Thu",
+        "fri": "Fri",
+        "sat": "Sat",
+        "activities": "activities",
+        "less": "Less",
+        "more": "More"
+      },
+      "wordcloud": {
+        "title": "Query Keywords",
+        "empty": "No queries for selected date",
+        "times": "times",
+        "showing": "Showing {{count}} of {{total}} keywords"
+      },
+      "log": {
+        "title": "Activity Log",
+        "empty": "No activities for selected date",
+        "noContext": "Tool search",
+        "sessions": "sessions",
+        "executions": "executions",
+        "noExecutions": "No tools executed",
+        "arguments": "Arguments",
+        "result": "Result",
+        "error": "Error"
+      }
+    },
     "viewer": {
       "refresh": "Refresh Data",
-      "lastUpdated": "Last Updated",
-      "toolCallsTitle": "Tool Usage Timeline",
-      "noToolCalls": "No tool calls available",
-      "callCount": "{{count}} calls",
-      "successCount": "Success: {{count}}",
-      "errorCount": "Failed: {{count}}",
-      "detail": {
-        "processingTime": "Processing Time",
-        "client": "Client",
-        "server": "Server",
-        "requestType": "Request Type",
-        "requestParams": "Request Parameters",
-        "responseData": "Response Data",
-        "none": "None",
-        "dataFormat": "Data Format",
-        "includedKeys": "Included Keys",
-        "largeResponseWarning": "Response is too large, content display is limited",
-        "errorMessage": "Error Message"
-      },
-      "table": {
-        "title": "Request Logs",
-        "showing": "Showing {{start}} - {{end}} of {{total}} items",
-        "noLogs": "No logs available",
-        "timestamp": "Timestamp",
-        "client": "Client",
-        "server": "Server",
-        "requestType": "Request Type",
-        "status": "Status",
-        "processingTime": "Processing Time",
-        "success": "Success",
-        "error": "Error",
-        "previous": "Previous",
-        "next": "Next",
-        "itemsPerPage": "{{count}} items"
-      },
       "dateFormat": {
         "long": "{{date, datetime}}",
         "shortDate": "MM-DD",
@@ -328,6 +326,27 @@
     "newDialog": {
       "title": "Create New Skill",
       "description": "Enter a name for your new skill"
+    },
+    "agentPaths": {
+      "title": "Integrations",
+      "empty": "No integrations configured yet",
+      "loadError": "Failed to load integrations",
+      "createSuccess": "Integration added successfully",
+      "createError": "Failed to add integration",
+      "deleteSuccess": "Integration deleted successfully",
+      "deleteError": "Failed to delete integration",
+      "nameRequired": "Name is required",
+      "pathRequired": "Path is required",
+      "name": "Name",
+      "namePlaceholder": "Enter agent name",
+      "path": "Path",
+      "pathPlaceholder": "Enter skills folder path",
+      "pathHint": "~ is expanded to home directory (e.g., ~/.claude/skills)",
+      "create": "Add",
+      "newDialog": {
+        "title": "Add Integration",
+        "description": "Add an AI agent's skills folder to sync your skills"
+      }
     }
   }
 }
