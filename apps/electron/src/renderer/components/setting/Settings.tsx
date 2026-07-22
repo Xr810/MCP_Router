@@ -34,6 +34,11 @@ const Settings: React.FC = () => {
   const [analyticsEnabled, setAnalyticsEnabled] = useState<boolean>(true);
   const [autoUpdateEnabled, setAutoUpdateEnabled] = useState<boolean>(true);
   const [showWindowOnStartup, setShowWindowOnStartup] = useState<boolean>(true);
+  const [mcpRemoteAccessEnabled, setMcpRemoteAccessEnabled] =
+    useState<boolean>(false);
+  const [mcpHttpHost, setMcpHttpHost] = useState("0.0.0.0");
+  const [mcpHttpPort, setMcpHttpPort] = useState("3282");
+  const [mcpGatewayPublicUrl, setMcpGatewayPublicUrl] = useState("");
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
   // Cloud Sync state
@@ -90,6 +95,10 @@ const Settings: React.FC = () => {
         setAnalyticsEnabled(settings.analyticsEnabled ?? true);
         setAutoUpdateEnabled(settings.autoUpdateEnabled ?? true);
         setShowWindowOnStartup(settings.showWindowOnStartup ?? true);
+        setMcpRemoteAccessEnabled(settings.mcpRemoteAccessEnabled ?? false);
+        setMcpHttpHost(settings.mcpHttpHost || "0.0.0.0");
+        setMcpHttpPort(String(settings.mcpHttpPort ?? 3282));
+        setMcpGatewayPublicUrl(settings.mcpGatewayPublicUrl || "");
       } catch {
         console.log("Failed to load settings, using defaults");
       }
@@ -226,6 +235,36 @@ const Settings: React.FC = () => {
     } catch (error) {
       console.error("Failed to save startup visibility settings:", error);
       setShowWindowOnStartup(!checked);
+    } finally {
+      setIsSavingSettings(false);
+    }
+  };
+
+  const handleSaveRemoteMcpSettings = async () => {
+    setIsSavingSettings(true);
+    try {
+      const parsedPort = Number(mcpHttpPort);
+      const port =
+        Number.isFinite(parsedPort) && parsedPort > 0 && parsedPort < 65536
+          ? parsedPort
+          : 3282;
+      const currentSettings = await platformAPI.settings.get();
+      await platformAPI.settings.save({
+        ...currentSettings,
+        mcpRemoteAccessEnabled,
+        mcpHttpHost: mcpHttpHost.trim() || "0.0.0.0",
+        mcpHttpPort: port,
+        mcpGatewayPublicUrl: mcpGatewayPublicUrl.trim(),
+      });
+      setMcpHttpPort(String(port));
+      toast.success(
+        mcpRemoteAccessEnabled
+          ? t("settings.remoteMcpRestartRequired")
+          : t("settings.remoteMcpSaved"),
+      );
+    } catch (error) {
+      console.error("Failed to save remote MCP settings:", error);
+      toast.error("Failed to save remote MCP settings");
     } finally {
       setIsSavingSettings(false);
     }
@@ -468,6 +507,80 @@ const Settings: React.FC = () => {
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* JE / Azure Remote MCP Access */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl">
+            {t("settings.remoteMcpAccess")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <p className="text-sm text-muted-foreground">
+            {t("settings.remoteMcpAccessDescription")}
+          </p>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <label className="text-sm font-medium">
+                {t("settings.remoteMcpAccessEnabled")}
+              </label>
+            </div>
+            <Switch
+              checked={mcpRemoteAccessEnabled}
+              onCheckedChange={setMcpRemoteAccessEnabled}
+              disabled={isSavingSettings}
+            />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                {t("settings.mcpHttpHost")}
+              </label>
+              <Input
+                value={mcpHttpHost}
+                onChange={(e) => setMcpHttpHost(e.target.value)}
+                placeholder={t("settings.mcpHttpHostPlaceholder")}
+                disabled={isSavingSettings || !mcpRemoteAccessEnabled}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                {t("settings.mcpHttpPort")}
+              </label>
+              <Input
+                type="number"
+                value={mcpHttpPort}
+                onChange={(e) => setMcpHttpPort(e.target.value)}
+                disabled={isSavingSettings || !mcpRemoteAccessEnabled}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">
+              {t("settings.mcpGatewayPublicUrl")}
+            </label>
+            <Input
+              value={mcpGatewayPublicUrl}
+              onChange={(e) => setMcpGatewayPublicUrl(e.target.value)}
+              placeholder={t("settings.mcpGatewayPublicUrlPlaceholder")}
+              disabled={isSavingSettings}
+            />
+            <p className="text-xs text-muted-foreground">
+              {t("settings.mcpGatewayPublicUrlDescription")}
+            </p>
+          </div>
+
+          <Button
+            onClick={handleSaveRemoteMcpSettings}
+            disabled={isSavingSettings}
+          >
+            {isSavingSettings ? t("common.saving") : t("common.save")}
+          </Button>
         </CardContent>
       </Card>
 

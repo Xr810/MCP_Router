@@ -31,6 +31,8 @@ import {
   findStandardAppDefinition,
   getStandardAppIds,
 } from "./app-definitions";
+import { resolveMcpGatewayPublicUrl } from "@/main/modules/mcp-server-runtime/http/mcp-http-bind";
+import { getSettingsService } from "@/main/modules/settings/settings.service";
 import os from "os";
 
 // SVGアイコンのインポート
@@ -396,6 +398,32 @@ export class McpAppsManagerService extends SingletonService<
   }
 
   /**
+   * Hermes Agent / NemoHermes YAML block for mcp-router.
+   * When gateway public URL is set, CLI connect uses --url (Azure remote).
+   */
+  private buildHermesMcpRouterYamlEntry(tokenId: string): string {
+    const publicUrl = resolveMcpGatewayPublicUrl(
+      getSettingsService().getSettings(),
+    );
+    const args = publicUrl
+      ? `["-y", "@mcp_router/cli@latest", "connect", "--url", "${publicUrl}"]`
+      : `["-y", "@mcp_router/cli@latest", "connect"]`;
+
+    let envBlock =
+      `    env:\n` + `      MCPR_TOKEN: "${tokenId}"\n`;
+    if (publicUrl) {
+      envBlock += `      MCPR_URL: "${publicUrl}"\n`;
+    }
+
+    return (
+      `  mcp-router:\n` +
+      `    command: "npx"\n` +
+      `    args: ${args}\n` +
+      envBlock
+    );
+  }
+
+  /**
    * Hermes Agent / NemoHermes YAML config update.
    * Writes/merges mcp_servers.mcp-router under ~/.hermes/config.yaml
    */
@@ -406,13 +434,8 @@ export class McpAppsManagerService extends SingletonService<
     const dir = path.dirname(filePath);
     await fsPromises.mkdir(dir, { recursive: true });
 
-    const block =
-      `mcp_servers:\n` +
-      `  mcp-router:\n` +
-      `    command: "npx"\n` +
-      `    args: ["-y", "@mcp_router/cli@latest", "connect"]\n` +
-      `    env:\n` +
-      `      MCPR_TOKEN: "${tokenId}"\n`;
+    const entry = this.buildHermesMcpRouterYamlEntry(tokenId);
+    const block = `mcp_servers:\n${entry}`;
 
     let content = "";
     try {
@@ -431,14 +454,11 @@ export class McpAppsManagerService extends SingletonService<
       /(^|\n)[ \t]*mcp-router:[ \t]*\n(?:[ \t]+.+\n)*/;
     if (/^mcp_servers:\s*$/m.test(content) || /\nmcp_servers:\s*\n/.test(content)) {
       if (/\nmcp-router:\s*\n/.test(content) || /^mcp-router:\s*\n/m.test(content)) {
-        content = content.replace(
-          entryPattern,
-          `\n  mcp-router:\n    command: "npx"\n    args: ["-y", "@mcp_router/cli@latest", "connect"]\n    env:\n      MCPR_TOKEN: "${tokenId}"\n`,
-        );
+        content = content.replace(entryPattern, `\n${entry}`);
       } else {
         content = content.replace(
           /(^|\n)mcp_servers:\s*\n/,
-          `$1mcp_servers:\n  mcp-router:\n    command: "npx"\n    args: ["-y", "@mcp_router/cli@latest", "connect"]\n    env:\n      MCPR_TOKEN: "${tokenId}"\n`,
+          `$1mcp_servers:\n${entry}`,
         );
       }
     } else {

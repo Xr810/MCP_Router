@@ -3,6 +3,7 @@ import path from "node:path";
 import { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
 import { AggregatorServer } from "@/main/modules/mcp-server-runtime/aggregator-server";
 import { MCPHttpServer } from "@/main/modules/mcp-server-runtime/http/mcp-http-server";
+import { resolveMcpHttpBind } from "@/main/modules/mcp-server-runtime/http/mcp-http-bind";
 import { ToolCatalogService } from "@/main/modules/tool-catalog/tool-catalog.service";
 import started from "electron-squirrel-startup";
 import { updateElectronApp } from "update-electron-app";
@@ -23,6 +24,8 @@ import {
   getSettingsService,
 } from "@/main/modules/settings/settings.service";
 import { getSkillService } from "@/main/modules/skills/skills.service";
+
+const APP_DISPLAY_NAME = "MCP Router";
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -97,7 +100,7 @@ const createWindow = ({ showOnCreate = true }: CreateWindowOptions = {}) => {
     height: 800,
     minWidth: 800,
     minHeight: 600,
-    title: "MCP Router",
+    title: APP_DISPLAY_NAME,
     icon: path.join(__dirname, "assets/icon.png"),
     autoHideMenuBar: true,
     show: false,
@@ -276,8 +279,19 @@ async function initMCPServices(): Promise<void> {
   // AggregatorServerの初期化
   aggregatorServer = new AggregatorServer(serverManager, toolCatalogService);
 
-  // HTTPサーバーの初期化とスタート
-  mcpHttpServer = new MCPHttpServer(serverManager, 3282, aggregatorServer);
+  // HTTPサーバーの初期化とスタート（Azure: remote bind via settings/env）
+  const settings = getSettingsService().getSettings();
+  const bind = resolveMcpHttpBind(settings);
+  console.log(
+    `[MCP Router] HTTP aggregator binding ${bind.host}:${bind.port}` +
+      ` (remoteAccess=${bind.remoteAccessEnabled})`,
+  );
+  mcpHttpServer = new MCPHttpServer(
+    serverManager,
+    bind.port,
+    aggregatorServer,
+    bind.host,
+  );
   try {
     await mcpHttpServer.start();
   } catch (error) {
@@ -341,7 +355,7 @@ async function initApplication(): Promise<void> {
   });
 
   // アプリケーション名を設定
-  app.setName("MCP Router");
+  app.setName(APP_DISPLAY_NAME);
 
   // アプリケーションメニューを設定
   setApplicationMenu();

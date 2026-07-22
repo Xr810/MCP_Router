@@ -98,7 +98,18 @@
     "loadExternalMCPConfigs": "从外部应用程序加载 MCP 配置",
     "loadExternalMCPConfigsDescription": "允许 MCP Router 从其他应用程序（如 Claude for Desktop）导入服务器配置",
     "analytics": "发送使用情况分析",
-    "analyticsDescription": "发送匿名使用数据以帮助改进应用"
+    "analyticsDescription": "发送匿名使用数据以帮助改进应用",
+    "remoteMcpAccess": "远程 MCP 访问 (JE / Azure)",
+    "remoteMcpAccessDescription": "将 MCP HTTP 聚合器绑定到 localhost 以外，以便其他主机上的 Hermes / NemoHermes 连接。需要重启应用，并在 Azure NSG/防火墙开放端口。",
+    "remoteMcpAccessEnabled": "允许远程 MCP 客户端",
+    "mcpHttpHost": "绑定主机",
+    "mcpHttpHostPlaceholder": "0.0.0.0",
+    "mcpHttpPort": "绑定端口",
+    "mcpGatewayPublicUrl": "公共网关 URL (Hermes)",
+    "mcpGatewayPublicUrlPlaceholder": "https://HOST:3282/mcp",
+    "mcpGatewayPublicUrlDescription": "添加 MCP 配置时写入 Hermes 的 ~/.hermes/config.yaml。Cursor 和 Claude 仍使用 localhost。",
+    "remoteMcpRestartRequired": "已保存。主机/端口更改需重启 MCP Router 后生效。",
+    "remoteMcpSaved": "远程 MCP 设置已保存"
   },
   "mcpApps": {
     "title": "MCP 应用集成",

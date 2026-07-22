@@ -173,8 +173,29 @@ export class MCPHttpServer {
    * Configure API routes
    */
   private configureRoutes(): void {
+    // Unauthenticated liveness probe for Azure / load balancers / smoke tests
+    this.app.get("/health", (_req, res) => {
+      res.status(200).json({
+        ok: true,
+        service: "mcp-router",
+        host: this.host,
+        port: this.port,
+      });
+    });
+
     this.configureMcpRoute();
     this.configureMcpSseRoute();
+
+    // Authenticated status summary (same Bearer token as /mcp)
+    this.app.get("/mcp/status", (_req, res) => {
+      res.status(200).json({
+        ok: true,
+        service: "mcp-router",
+        host: this.host,
+        port: this.port,
+        sessions: this.sseSessions.size,
+      });
+    });
   }
 
   private resolveProjectFilter(

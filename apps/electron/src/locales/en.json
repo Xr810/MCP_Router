@@ -131,7 +131,18 @@
     "autoUpdate": "Enable automatic updates",
     "autoUpdateDescription": "Automatically download and install app updates",
     "showWindowOnStartup": "Show main window at system startup",
-    "showWindowOnStartupDescription": "Display MCP Router when your computer boots. Disable to start in the background."
+    "showWindowOnStartupDescription": "Display MCP Router when your computer boots. Disable to start in the background.",
+    "remoteMcpAccess": "Remote MCP Access (JE / Azure)",
+    "remoteMcpAccessDescription": "Bind the MCP HTTP aggregator beyond localhost so Hermes / NemoHermes on another host can connect. Requires app restart. Keep Azure NSG/firewall open for the port.",
+    "remoteMcpAccessEnabled": "Allow remote MCP clients",
+    "mcpHttpHost": "Bind host",
+    "mcpHttpHostPlaceholder": "0.0.0.0",
+    "mcpHttpPort": "Bind port",
+    "mcpGatewayPublicUrl": "Public gateway URL (Hermes)",
+    "mcpGatewayPublicUrlPlaceholder": "https://HOST:3282/mcp",
+    "mcpGatewayPublicUrlDescription": "Written into Hermes ~/.hermes/config.yaml when you add MCP config. Cursor and Claude stay on localhost.",
+    "remoteMcpRestartRequired": "Saved. Restart MCP Router for bind host/port changes to take effect.",
+    "remoteMcpSaved": "Remote MCP settings saved"
   },
   "mcpApps": {
     "title": "MCP App Integrations",

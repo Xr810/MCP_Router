@@ -130,7 +130,18 @@
     "autoUpdate": "自動アップデート",
     "autoUpdateDescription": "アプリのアップデートを自動でダウンロード・インストールします",
     "showWindowOnStartup": "OS起動時にウィンドウを表示",
-    "showWindowOnStartupDescription": "コンピューター起動時にMCP Routerのウィンドウを表示します。無効にするとバックグラウンドで起動します。"
+    "showWindowOnStartupDescription": "コンピューター起動時にMCP Routerのウィンドウを表示します。無効にするとバックグラウンドで起動します。",
+    "remoteMcpAccess": "リモート MCP アクセス (JE / Azure)",
+    "remoteMcpAccessDescription": "MCP HTTP アグリゲータを localhost 以外にバインドし、別ホストの Hermes / NemoHermes から接続できるようにします。アプリの再起動が必要です。ポートの NSG/ファイアウォール開放も必要です。",
+    "remoteMcpAccessEnabled": "リモート MCP クライアントを許可",
+    "mcpHttpHost": "バインドホスト",
+    "mcpHttpHostPlaceholder": "0.0.0.0",
+    "mcpHttpPort": "バインドポート",
+    "mcpGatewayPublicUrl": "公開ゲートウェイ URL (Hermes)",
+    "mcpGatewayPublicUrlPlaceholder": "https://HOST:3282/mcp",
+    "mcpGatewayPublicUrlDescription": "MCP 設定追加時に Hermes の ~/.hermes/config.yaml へ書き込みます。Cursor / Claude は localhost のままです。",
+    "remoteMcpRestartRequired": "保存しました。ホスト/ポート変更を反映するには MCP Router を再起動してください。",
+    "remoteMcpSaved": "リモート MCP 設定を保存しました"
   },
   "mcpApps": {
     "title": "MCPアプリ連携",
