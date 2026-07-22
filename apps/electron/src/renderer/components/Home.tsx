@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { MCPServer, ProjectOptimization } from "@mcp_router/shared";
 import { ScrollArea } from "@mcp_router/ui";
 import { Badge } from "@mcp_router/ui";
-import { Switch } from "@mcp_router/ui";
 import {
   Select,
   SelectContent,
@@ -22,7 +21,6 @@ import {
   AlertCircle,
   Grid3X3,
   List,
-  Settings as SettingsIcon,
   ChevronDown,
   Trash2,
 } from "lucide-react";
@@ -41,6 +39,7 @@ import { showServerError } from "@/renderer/components/common";
 // Import components
 import { ServerErrorModal } from "@/renderer/components/common/ServerErrorModal";
 import { ServerCardCompact } from "@/renderer/components/mcp/server/ServerCardCompact";
+import { ServerPowerCoupler } from "@/renderer/components/mcp/server/ServerPowerCoupler";
 import { Link } from "react-router-dom";
 import { Button } from "@mcp_router/ui";
 import {
@@ -264,12 +263,19 @@ const Home: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full gap-5">
-      {/* Page header — title left, primary Add action right (reference UI) */}
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight text-muted-foreground">
-          {t("serverList.title")}
-        </h1>
-        <Button asChild variant="outline" className="gap-2 shrink-0">
+      {/* Page header — title + primary action only */}
+      <div className="flex items-end justify-between gap-4">
+        <div className="space-y-1 min-w-0">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+            {t("serverList.title")}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {t("serverList.subtitle", {
+              defaultValue: "Connect, power, and route your MCP servers.",
+            })}
+          </p>
+        </div>
+        <Button asChild className="gap-2 shrink-0 bg-[#2563eb] hover:bg-[#1d4ed8] text-white border-0">
           <Link to="/servers/add">
             <IconPlus className="h-4 w-4" />
             {t("serverList.addServer")}
@@ -277,27 +283,27 @@ const Home: React.FC = () => {
         </Button>
       </div>
 
-      {/* Secondary toolbar — filters / search / view (not cramped with Add) */}
-      <div className="flex flex-wrap items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsHomeSettingsOpen(true)}
-          className="gap-1 h-9"
-          title={t("projects.projectSettings", {
-            defaultValue: "Project Settings",
-          })}
-        >
-          <SettingsIcon className="h-4 w-4" />
-        </Button>
-        <div className="w-36">
+      {/* Toolbar — search primary; filter + view grouped; export quiet */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="relative flex-1 min-w-0">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t("common.search")}
+            className="w-full bg-background border border-border rounded-md h-10 px-3 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb]/35 focus:border-[#2563eb]/50"
+          />
+          <IconSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
           <Select
             value={selectedProjectId === null ? "__all__" : selectedProjectId}
             onValueChange={(value) =>
               setSelectedProjectId(value === "__all__" ? null : value)
             }
           >
-            <SelectTrigger className="h-9">
+            <SelectTrigger className="h-10 w-[9.5rem]">
               <SelectValue
                 placeholder={t("projects.all", { defaultValue: "All" })}
               />
@@ -316,46 +322,64 @@ const Home: React.FC = () => {
               ))}
             </SelectContent>
           </Select>
-        </div>
-        <div className="relative flex-1 min-w-[12rem]">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t("common.search")}
-            className="w-full bg-background border border-border rounded-md h-9 px-3 pl-9 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-          />
-          <IconSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        </div>
-        <div className="flex gap-1">
           <Button
-            variant={serverViewMode === "list" ? "default" : "outline"}
+            variant="ghost"
             size="sm"
-            onClick={() => setServerViewMode("list")}
-            className="h-9 w-9 p-0"
-            title="List View"
+            onClick={() => setIsHomeSettingsOpen(true)}
+            className="h-10 px-2.5 text-xs text-muted-foreground hover:text-foreground"
+            title={t("projects.projectSettings", {
+              defaultValue: "Project Settings",
+            })}
           >
-            <List className="h-4 w-4" />
+            Projects
           </Button>
-          <Button
-            variant={serverViewMode === "grid" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setServerViewMode("grid")}
-            className="h-9 w-9 p-0"
-            title="Grid View"
+
+          <div
+            className="inline-flex h-10 items-center rounded-md border border-border bg-muted/30 p-0.5"
+            role="group"
+            aria-label="View mode"
           >
-            <Grid3X3 className="h-4 w-4" />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setServerViewMode("list")}
+              className={cn(
+                "h-9 w-9 p-0 rounded-[5px]",
+                serverViewMode === "list" &&
+                  "bg-background text-[#2563eb] shadow-sm",
+              )}
+              title="List View"
+            >
+              <List className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setServerViewMode("grid")}
+              className={cn(
+                "h-9 w-9 p-0 rounded-[5px]",
+                serverViewMode === "grid" &&
+                  "bg-background text-[#2563eb] shadow-sm",
+              )}
+              title="Grid View"
+            >
+              <Grid3X3 className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={exportServersToFile}
+            className="h-10 gap-1.5 text-muted-foreground hover:text-foreground"
+            title="Export"
+          >
+            <IconUpload className="h-4 w-4" />
+            <span className="hidden md:inline text-xs font-medium">
+              Export
+            </span>
           </Button>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={exportServersToFile}
-          className="gap-1 h-9"
-          title="Export"
-        >
-          <IconUpload className="h-4 w-4" />
-        </Button>
       </div>
 
       <div
@@ -527,7 +551,7 @@ const Home: React.FC = () => {
                                         </div>
                                       )}
                                   </div>
-                                  <div className="flex items-center gap-2">
+                                  <div className="flex items-center gap-3">
                                     {server.status === "error" && (
                                       <button
                                         className="text-destructive hover:text-destructive/80 p-1.5 rounded-full hover:bg-destructive/10 transition-colors"
@@ -539,62 +563,47 @@ const Home: React.FC = () => {
                                         <AlertCircle className="h-4 w-4" />
                                       </button>
                                     )}
-                                    <span className="text-xs text-muted-foreground">
-                                      {server.status === "running"
-                                        ? t("serverList.status.running")
-                                        : server.status === "starting"
-                                          ? t("serverList.status.starting")
-                                          : server.status === "stopping"
-                                            ? t("serverList.status.stopping")
-                                            : t("serverList.status.stopped")}
-                                    </span>
-                                    <div className="h-6 w-12">
-                                      <Switch
-                                        checked={server.status === "running"}
-                                        disabled={
-                                          server.status === "starting" ||
-                                          server.status === "stopping" ||
-                                          hasUnsetRequiredParams(server)
-                                        }
-                                        title={
-                                          hasUnsetRequiredParams(server)
-                                            ? t(
-                                                "serverList.requiredParamsNotSet",
-                                              )
-                                            : undefined
-                                        }
-                                        onCheckedChange={async (checked) => {
-                                          try {
-                                            if (checked) {
-                                              await startServer(server.id);
-                                              // サーバーが起動完了した場合のメッセージ
-                                              toast.success(
-                                                t("serverList.serverStarted"),
-                                              );
-                                            } else {
-                                              await stopServer(server.id);
-                                              // サーバーが停止完了した場合のメッセージ
-                                              toast.success(
-                                                t("serverList.serverStopped"),
-                                              );
-                                            }
-                                          } catch (error) {
-                                            console.error(
-                                              "Server operation failed:",
-                                              error,
+                                    <ServerPowerCoupler
+                                      status={server.status}
+                                      disabled={
+                                        server.status === "starting" ||
+                                        server.status === "stopping" ||
+                                        hasUnsetRequiredParams(server)
+                                      }
+                                      title={
+                                        hasUnsetRequiredParams(server)
+                                          ? t(
+                                              "serverList.requiredParamsNotSet",
+                                            )
+                                          : undefined
+                                      }
+                                      onToggle={async (checked) => {
+                                        try {
+                                          if (checked) {
+                                            await startServer(server.id);
+                                            toast.success(
+                                              t("serverList.serverStarted"),
                                             );
-                                            // Use enhanced error display with server name context
-                                            showServerError(
-                                              error instanceof Error
-                                                ? error
-                                                : new Error(String(error)),
-                                              server.name,
+                                          } else {
+                                            await stopServer(server.id);
+                                            toast.success(
+                                              t("serverList.serverStopped"),
                                             );
                                           }
-                                        }}
-                                        onClick={(e) => e.stopPropagation()}
-                                      />
-                                    </div>
+                                        } catch (error) {
+                                          console.error(
+                                            "Server operation failed:",
+                                            error,
+                                          );
+                                          showServerError(
+                                            error instanceof Error
+                                              ? error
+                                              : new Error(String(error)),
+                                            server.name,
+                                          );
+                                        }
+                                      }}
+                                    />
                                     <button
                                       className="p-1.5 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
                                       onClick={(e) =>
@@ -729,7 +738,7 @@ const Home: React.FC = () => {
                                     </div>
                                   )}
                               </div>
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-3">
                                 {server.status === "error" && (
                                   <button
                                     className="text-destructive hover:text-destructive/80 p-1.5 rounded-full hover:bg-destructive/10 transition-colors"
@@ -739,57 +748,45 @@ const Home: React.FC = () => {
                                     <AlertCircle className="h-4 w-4" />
                                   </button>
                                 )}
-                                <span className="text-xs text-muted-foreground">
-                                  {server.status === "running"
-                                    ? t("serverList.status.running")
-                                    : server.status === "starting"
-                                      ? t("serverList.status.starting")
-                                      : server.status === "stopping"
-                                        ? t("serverList.status.stopping")
-                                        : t("serverList.status.stopped")}
-                                </span>
-                                <div className="h-6 w-12">
-                                  <Switch
-                                    checked={server.status === "running"}
-                                    disabled={
-                                      server.status === "starting" ||
-                                      server.status === "stopping" ||
-                                      hasUnsetRequiredParams(server)
-                                    }
-                                    title={
-                                      hasUnsetRequiredParams(server)
-                                        ? t("serverList.requiredParamsNotSet")
-                                        : undefined
-                                    }
-                                    onCheckedChange={async (checked) => {
-                                      try {
-                                        if (checked) {
-                                          await startServer(server.id);
-                                          toast.success(
-                                            t("serverList.serverStarted"),
-                                          );
-                                        } else {
-                                          await stopServer(server.id);
-                                          toast.success(
-                                            t("serverList.serverStopped"),
-                                          );
-                                        }
-                                      } catch (error) {
-                                        console.error(
-                                          "Server operation failed:",
-                                          error,
+                                <ServerPowerCoupler
+                                  status={server.status}
+                                  disabled={
+                                    server.status === "starting" ||
+                                    server.status === "stopping" ||
+                                    hasUnsetRequiredParams(server)
+                                  }
+                                  title={
+                                    hasUnsetRequiredParams(server)
+                                      ? t("serverList.requiredParamsNotSet")
+                                      : undefined
+                                  }
+                                  onToggle={async (checked) => {
+                                    try {
+                                      if (checked) {
+                                        await startServer(server.id);
+                                        toast.success(
+                                          t("serverList.serverStarted"),
                                         );
-                                        showServerError(
-                                          error instanceof Error
-                                            ? error
-                                            : new Error(String(error)),
-                                          server.name,
+                                      } else {
+                                        await stopServer(server.id);
+                                        toast.success(
+                                          t("serverList.serverStopped"),
                                         );
                                       }
-                                    }}
-                                    onClick={(e) => e.stopPropagation()}
-                                  />
-                                </div>
+                                    } catch (error) {
+                                      console.error(
+                                        "Server operation failed:",
+                                        error,
+                                      );
+                                      showServerError(
+                                        error instanceof Error
+                                          ? error
+                                          : new Error(String(error)),
+                                        server.name,
+                                      );
+                                    }
+                                  }}
+                                />
                                 <button
                                   className="p-1.5 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
                                   onClick={(e) => handleDeleteServer(server, e)}

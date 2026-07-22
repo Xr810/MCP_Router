@@ -110,7 +110,7 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   planName: null,
   packageManagerOverlayDisplayCount: 0,
   loadExternalMCPConfigs: true,
-  analyticsEnabled: true,
+  analyticsEnabled: false,
   autoUpdateEnabled: true,
   showWindowOnStartup: true,
   // corporate site is light-first; default the product to light

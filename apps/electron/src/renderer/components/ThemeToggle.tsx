@@ -48,53 +48,49 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
 
   if (variant === "switch-row") {
     return (
-      <div className={className}>
-        <div className="flex items-center justify-between gap-4">
-          <div className="space-y-0.5">
-            <label className="text-sm font-medium">{t("settings.theme")}</label>
-            <p className="text-xs text-muted-foreground">
-              {isDark
+      <div
+        className={
+          className ??
+          "flex items-center justify-between gap-4"
+        }
+      >
+        <div className="space-y-0.5 min-w-0">
+          <label className="text-sm font-medium text-foreground">
+            {t("settings.theme")}
+          </label>
+          <p className="text-xs text-muted-foreground">
+            {theme === "system"
+              ? t("settings.themeSystem")
+              : isDark
                 ? t("settings.themeDark")
                 : t("settings.themeLight")}
-            </p>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={toggle}
-            className="gap-2 min-w-[7.5rem]"
-            aria-label={t("settings.theme")}
-          >
-            {isDark ? (
-              <>
-                <Moon className="h-4 w-4" />
-                {t("settings.themeDark")}
-              </>
-            ) : (
-              <>
-                <Sun className="h-4 w-4" />
-                {t("settings.themeLight")}
-              </>
-            )}
-          </Button>
+          </p>
         </div>
-        <div className="mt-3 flex gap-2">
+        <div
+          className="inline-flex h-10 items-center rounded-md border border-border bg-muted/30 p-0.5 shrink-0"
+          role="group"
+          aria-label={t("settings.theme")}
+        >
           {(
             [
-              ["light", t("settings.themeLight")],
-              ["dark", t("settings.themeDark")],
-              ["system", t("settings.themeSystem")],
+              ["light", t("settings.themeLight"), Sun],
+              ["dark", t("settings.themeDark"), Moon],
+              ["system", t("settings.themeSystem"), null],
             ] as const
-          ).map(([value, label]) => (
+          ).map(([value, label, Icon]) => (
             <Button
               key={value}
               type="button"
+              variant="ghost"
               size="sm"
-              variant={theme === value ? "default" : "outline"}
               onClick={() => setTheme(value)}
-              className="flex-1"
+              className={
+                theme === value
+                  ? "h-9 gap-1.5 rounded-[5px] bg-background text-[#2563eb] shadow-sm"
+                  : "h-9 gap-1.5 rounded-[5px] text-muted-foreground"
+              }
             >
+              {Icon ? <Icon className="h-3.5 w-3.5" /> : null}
               {label}
             </Button>
           ))}

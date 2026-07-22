@@ -96,36 +96,64 @@ function extractCodexTokenFromToml(tomlText: string): string | null {
 
 /**
  * Hermes ~/.hermes/config.yaml is YAML (mcp_servers), not JSON.
- * Parse lightly without a YAML dependency so configured/token detection works.
+ * Accepts HTTP style (url + Authorization Bearer) and legacy CLI connect.
  */
-function extractHermesConfigInfo(yamlText: string): {
+export function extractHermesConfigInfo(yamlText: string): {
   hasMcpConfig: boolean;
   configToken: string;
 } {
   const hasMcpServers = /(^|\n)mcp_servers:\s*(\n|$)/.test(yamlText);
-  const hasMcpRouter = /(^|\n)[ \t]*mcp-router:\s*(\n|$)/.test(yamlText);
-  const hasConnect = /(^|\n)[ \t]*args:[\s\S]*?\bconnect\b/.test(yamlText);
-  const hasCli =
-    /@mcp_router\/cli(?:@\S*)?/.test(yamlText) ||
-    /mcpr-cli(?:@\S*)?/.test(yamlText);
-  const hasNpx = /(^|\n)[ \t]*command:\s*["']?npx["']?/.test(yamlText);
+  const routerBlockMatch = yamlText.match(
+    /(^|\n)[ \t]*mcp-router:[ \t]*\n((?:[ \t]+.+\n)*)/,
+  );
+  const routerBlock = routerBlockMatch?.[2] ?? "";
+  const hasMcpRouter = !!routerBlockMatch;
 
-  const tokenMatch = yamlText.match(
+  // Preferred remote shape: url + Authorization Bearer (scoped to mcp-router)
+  const hasHttpUrl = /^[ \t]*url:\s*(?:"[^"]+"|'[^']+'|\S+)/m.test(routerBlock);
+  const bearerMatch = routerBlock.match(
+    /Authorization:\s*(?:"Bearer\s+([^"]+)"|'Bearer\s+([^']+)'|Bearer\s+([^\s#]+))/i,
+  );
+  const bearerToken = stripOuterQuotes(
+    bearerMatch?.[1] || bearerMatch?.[2] || bearerMatch?.[3] || "",
+  );
+
+  // Legacy CLI bridge (npx @mcp_router/cli connect)
+  const hasConnect = /\bconnect\b/.test(routerBlock);
+  const hasCli =
+    /@mcp_router\/cli(?:@\S*)?/.test(routerBlock) ||
+    /mcpr-cli(?:@\S*)?/.test(routerBlock);
+  const hasNpx = /^[ \t]*command:\s*["']?npx["']?/m.test(routerBlock);
+
+  const envTokenMatch = routerBlock.match(
     /MCPR_TOKEN:\s*(?:"([^"]+)"|'([^']+)'|([^\s#]+))/,
   );
-  const configToken = stripOuterQuotes(
-    tokenMatch?.[1] || tokenMatch?.[2] || tokenMatch?.[3] || "",
+  const envToken = stripOuterQuotes(
+    envTokenMatch?.[1] || envTokenMatch?.[2] || envTokenMatch?.[3] || "",
   );
 
+  const isHttpConfig = !!(
+    hasMcpServers &&
+    hasMcpRouter &&
+    hasHttpUrl &&
+    bearerToken
+  );
+  const isCliConfig = !!(
+    hasMcpServers &&
+    hasMcpRouter &&
+    hasNpx &&
+    hasConnect &&
+    hasCli
+  );
+
+  const configToken =
+    (typeof bearerToken === "string" && bearerToken) ||
+    (typeof envToken === "string" ? envToken : "") ||
+    "";
+
   return {
-    hasMcpConfig: !!(
-      hasMcpServers &&
-      hasMcpRouter &&
-      hasNpx &&
-      hasConnect &&
-      hasCli
-    ),
-    configToken: typeof configToken === "string" ? configToken : "",
+    hasMcpConfig: isHttpConfig || isCliConfig,
+    configToken,
   };
 }
 

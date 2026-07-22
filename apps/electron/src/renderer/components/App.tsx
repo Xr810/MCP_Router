@@ -10,6 +10,7 @@ import { SidebarProvider } from "@mcp_router/ui";
 import McpAppsManager from "@/renderer/components/mcp/apps/McpAppsManager";
 import LogViewer from "@/renderer/components/mcp/log/LogViewer";
 import Settings from "./setting/Settings";
+import LoginPage from "./auth/LoginPage";
 import { useServerStore, useAuthStore, initializeStores } from "../stores";
 import { usePlatformAPI } from "@/renderer/platform-api";
 import { IconProgress } from "@tabler/icons-react";
@@ -46,7 +47,7 @@ const App: React.FC = () => {
         // Initialize PostHog after getting settings
         const settings = await platformAPI.settings.get();
         postHogService.initialize({
-          analyticsEnabled: settings.analyticsEnabled ?? true,
+          analyticsEnabled: settings.analyticsEnabled ?? false,
           userId: settings.userId,
         });
       } catch (error) {
@@ -67,7 +68,7 @@ const App: React.FC = () => {
     const authUnsubscribe = platformAPI.auth.onChange(async (status) => {
       const settings = await platformAPI.settings.get();
       postHogService.updateConfig({
-        analyticsEnabled: settings.analyticsEnabled ?? true,
+        analyticsEnabled: settings.analyticsEnabled ?? false,
         userId: status.authenticated ? status.userId : undefined,
       });
     });
@@ -126,9 +127,9 @@ const App: React.FC = () => {
 
   // Loading indicator component to reuse
   const LoadingIndicator = () => (
-    <div className="flex h-full items-center justify-center bg-content-light">
+    <div className="flex h-full items-center justify-center bg-background">
       <div className="text-center">
-        <IconProgress className="h-10 w-10 mx-auto animate-spin text-primary" />
+        <IconProgress className="h-10 w-10 mx-auto animate-spin text-[#2563eb]" />
         <p className="mt-4 text-muted-foreground">{t("common.loading")}</p>
       </div>
     </div>
@@ -168,6 +169,7 @@ const App: React.FC = () => {
                 element={<WorkflowManager />}
               />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/login" element={<LoginPage />} />
               <Route
                 path="/settings/workspaces"
                 element={<WorkspaceManagement />}

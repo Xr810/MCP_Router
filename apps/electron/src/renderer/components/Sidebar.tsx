@@ -6,8 +6,6 @@ import {
   IconActivity,
   IconDeviceDesktop,
   IconDownload,
-  IconWand,
-  IconLink,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { useWorkspaceStore } from "@/renderer/stores";
@@ -150,55 +148,7 @@ const SidebarComponent: React.FC = () => {
             </SidebarGroup>
           </Collapsible>
 
-          {/* Skills Group */}
-          {!isRemoteWorkspace && (
-            <Collapsible defaultOpen className="group/collapsible-skills">
-              <SidebarGroup>
-                <SidebarGroupLabel>
-                  <CollapsibleTrigger className="flex flex-row items-center w-full">
-                    {t("skills.title")}
-                    <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible-skills:rotate-180" />
-                  </CollapsibleTrigger>
-                </SidebarGroupLabel>
-                <CollapsibleContent>
-                  <SidebarGroupContent>
-                    <SidebarMenuItem>
-                      <SidebarMenuButton
-                        asChild
-                        tooltip={t("skills.title")}
-                        isActive={location.pathname === "/skills"}
-                      >
-                        <Link
-                          to="/skills"
-                          className="flex items-center gap-3 py-5 px-3 w-full"
-                        >
-                          <IconWand className="h-6 w-6" />
-                          <span className="text-base">{t("skills.title")}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                      <SidebarMenuButton
-                        asChild
-                        tooltip={t("skills.agentPaths.title")}
-                        isActive={location.pathname === "/skills/agents"}
-                      >
-                        <Link
-                          to="/skills/agents"
-                          className="flex items-center gap-3 py-5 px-3 w-full"
-                        >
-                          <IconLink className="h-6 w-6" />
-                          <span className="text-base">
-                            {t("skills.agentPaths.title")}
-                          </span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  </SidebarGroupContent>
-                </CollapsibleContent>
-              </SidebarGroup>
-            </Collapsible>
-          )}
+          {/* Skills / agent paths kept as routes but hidden from nav */}
         </SidebarMenu>
       </SidebarContent>
 

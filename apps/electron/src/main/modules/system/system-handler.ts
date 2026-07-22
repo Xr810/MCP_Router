@@ -60,9 +60,10 @@ export function setupSystemHandlers(): void {
     return false;
   });
 
-  // Application restart
+  // Application restart (relaunch so gateway bind settings take effect)
   ipcMain.handle("system:restartApp", () => {
-    app.quit();
+    app.relaunch();
+    app.exit(0);
     return true;
   });
 }

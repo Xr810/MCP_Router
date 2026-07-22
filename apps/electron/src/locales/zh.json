@@ -22,9 +22,14 @@
   },
   "locale": "zh-CN",
   "login": {
-    "title": "登录 MCP Router",
-    "description": "登录以访问此功能",
-    "loginButton": "登录"
+    "title": "登录",
+    "product": "MCP Router",
+    "description": "可选。不登录也可使用本地服务器和企业网关。",
+    "loginButton": "登录",
+    "continueWithout": "不登录，继续使用",
+    "footer": "MCP Router",
+    "requiredTitle": "需要登录",
+    "requiredDescription": "此远程工作区需要登录后才能继续。"
   },
   "home": {
     "title": "MCP Router"
@@ -41,7 +46,8 @@
     }
   },
   "discoverServers": {
-    "title": "设置任何 MCP 服务器",
+    "title": "添加 MCP 服务器",
+    "subtitle": "添加本地命令、远程 HTTP 端点，或导入现有配置。",
     "serverNameRequired": "请输入服务器名称"
   },
   "serverList": {
@@ -69,7 +75,7 @@
     "themeLight": "浅色",
     "themeDark": "深色",
     "themeSystem": "系统",
-    "loginOptionalDescription": "登录是可选的。您可以在没有账户的情况下使用 MCP Router，但某些功能可能会受到限制。",
+    "loginOptionalDescription": "登录是可选的。不登录也可使用本地服务器和企业网关。",
     "login": "登录",
     "loggingIn": "登录中...",
     "logout": "登出",
@@ -99,15 +105,15 @@
     "loadExternalMCPConfigsDescription": "允许 MCP Router 从其他应用程序（如 Claude for Desktop）导入服务器配置",
     "analytics": "发送使用情况分析",
     "analyticsDescription": "发送匿名使用数据以帮助改进应用",
-    "remoteMcpAccess": "远程 MCP 访问 (JE / Azure)",
-    "remoteMcpAccessDescription": "将 MCP HTTP 聚合器绑定到 localhost 以外，以便其他主机上的 Hermes / NemoHermes 连接。需要重启应用，并在 Azure NSG/防火墙开放端口。",
-    "remoteMcpAccessEnabled": "允许远程 MCP 客户端",
-    "mcpHttpHost": "绑定主机",
-    "mcpHttpHostPlaceholder": "0.0.0.0",
-    "mcpHttpPort": "绑定端口",
-    "mcpGatewayPublicUrl": "公共网关 URL (Hermes)",
-    "mcpGatewayPublicUrlPlaceholder": "https://HOST:3282/mcp",
-    "mcpGatewayPublicUrlDescription": "添加 MCP 配置时写入 Hermes 的 ~/.hermes/config.yaml。Cursor 和 Claude 仍使用 localhost。",
+    "remoteMcpAccess": "企业网关",
+    "remoteMcpAccessDescription": "",
+    "remoteMcpAccessEnabled": "启用企业网关",
+    "mcpHttpHost": "监听地址",
+    "mcpHttpHostPlaceholder": "",
+    "mcpHttpPort": "服务端口",
+    "mcpGatewayPublicUrl": "客户端端点 URL",
+    "mcpGatewayPublicUrlPlaceholder": "",
+    "mcpGatewayPublicUrlDescription": "",
     "remoteMcpRestartRequired": "已保存。主机/端口更改需重启 MCP Router 后生效。",
     "remoteMcpSaved": "远程 MCP 设置已保存"
   },
@@ -115,11 +121,11 @@
     "title": "MCP 应用集成",
     "description": "管理支持的 AI 应用程序的 MCP 配置。",
     "addCustomApp": "添加自定义应用",
-    "customAppDescription": "创建与 MCP Router 的自定义应用集成。",
+    "customAppDescription": "创建可对此路由器进行身份验证的客户端集成。",
     "enterAppName": "输入自定义应用名称",
-    "configured": "此应用程序已配置 MCP Router。",
-    "notConfigured": "此应用程序未设置 MCP Router 配置。",
-    "installRequired": "安装此应用程序以与 MCP Router 配合使用。",
+    "configured": "此应用程序已配置。",
+    "notConfigured": "尚未配置。",
+    "installRequired": "安装此应用程序以进行连接。",
     "howToUse": "使用方法",
     "addMcpConfig": "添加 MCP 配置",
     "notAvailable": "不可用",

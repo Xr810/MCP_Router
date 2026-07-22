@@ -24,9 +24,14 @@
     "failed": "フィードバックの送信に失敗しました"
   },
   "login": {
-    "title": "MCP Routerにログイン",
-    "description": "この機能にアクセスするためにログインしてください。",
-    "loginButton": "ログイン"
+    "title": "サインイン",
+    "product": "MCP Router",
+    "description": "任意です。アカウントなしでもローカルサーバーとエンタープライズゲートウェイは利用できます。",
+    "loginButton": "サインイン",
+    "continueWithout": "サインインせずに続ける",
+    "footer": "MCP Router",
+    "requiredTitle": "サインインが必要です",
+    "requiredDescription": "このリモートワークスペースを使うにはサインインが必要です。"
   },
   "logs": {
     "activity": {
@@ -73,7 +78,8 @@
     }
   },
   "discoverServers": {
-    "title": "どんなMCPサーバでも接続",
+    "title": "MCPサーバを追加",
+    "subtitle": "ローカルコマンド、リモートHTTP、または既存設定をインポートします。",
     "serverNameRequired": "サーバー名を入力してください"
   },
   "serverList": {
@@ -101,7 +107,7 @@
     "themeLight": "ライト",
     "themeDark": "ダーク",
     "themeSystem": "システム",
-    "loginOptionalDescription": "ログインは任意です。アカウントなしでもMCP Routerを使用できますが、一部の機能に制限がある場合があります。",
+    "loginOptionalDescription": "ログインは任意です。アカウントなしでもローカルサーバーとエンタープライズゲートウェイは利用できます。",
     "login": "ログイン",
     "loggingIn": "ログイン中...",
     "logout": "ログアウト",
@@ -130,16 +136,16 @@
     "autoUpdate": "自動アップデート",
     "autoUpdateDescription": "アプリのアップデートを自動でダウンロード・インストールします",
     "showWindowOnStartup": "OS起動時にウィンドウを表示",
-    "showWindowOnStartupDescription": "コンピューター起動時にMCP Routerのウィンドウを表示します。無効にするとバックグラウンドで起動します。",
-    "remoteMcpAccess": "リモート MCP アクセス (JE / Azure)",
-    "remoteMcpAccessDescription": "MCP HTTP アグリゲータを localhost 以外にバインドし、別ホストの Hermes / NemoHermes から接続できるようにします。アプリの再起動が必要です。ポートの NSG/ファイアウォール開放も必要です。",
-    "remoteMcpAccessEnabled": "リモート MCP クライアントを許可",
-    "mcpHttpHost": "バインドホスト",
-    "mcpHttpHostPlaceholder": "0.0.0.0",
-    "mcpHttpPort": "バインドポート",
-    "mcpGatewayPublicUrl": "公開ゲートウェイ URL (Hermes)",
-    "mcpGatewayPublicUrlPlaceholder": "https://HOST:3282/mcp",
-    "mcpGatewayPublicUrlDescription": "MCP 設定追加時に Hermes の ~/.hermes/config.yaml へ書き込みます。Cursor / Claude は localhost のままです。",
+    "showWindowOnStartupDescription": "コンピューター起動時に MCP Router のウィンドウを表示します。無効にするとバックグラウンドで起動します。",
+    "remoteMcpAccess": "エンタープライズゲートウェイ",
+    "remoteMcpAccessDescription": "",
+    "remoteMcpAccessEnabled": "エンタープライズゲートウェイを有効化",
+    "mcpHttpHost": "待受アドレス",
+    "mcpHttpHostPlaceholder": "",
+    "mcpHttpPort": "サービスポート",
+    "mcpGatewayPublicUrl": "クライアントエンドポイント URL",
+    "mcpGatewayPublicUrlPlaceholder": "",
+    "mcpGatewayPublicUrlDescription": "",
     "remoteMcpRestartRequired": "保存しました。ホスト/ポート変更を反映するには MCP Router を再起動してください。",
     "remoteMcpSaved": "リモート MCP 設定を保存しました"
   },
@@ -147,11 +153,11 @@
     "title": "MCPアプリ連携",
     "description": "サポートされているAIアプリケーションのMCP設定を管理します。",
     "addCustomApp": "カスタムアプリを追加",
-    "customAppDescription": "MCP Routerとのカスタムアプリ連携を作成します。",
+    "customAppDescription": "このルーターに対して認証できるクライアント連携を作成します。",
     "enterAppName": "カスタムアプリ名を入力",
-    "configured": "このアプリケーション用にMCP Routerが設定されています。",
-    "notConfigured": "このアプリケーション用のMCP Router設定がセットアップされていません。",
-    "installRequired": "MCP Routerと使用するにはこのアプリケーションをインストールしてください。",
+    "configured": "このアプリケーション用に設定済みです。",
+    "notConfigured": "まだ設定されていません。",
+    "installRequired": "接続するにはこのアプリケーションをインストールしてください。",
     "howToUse": "使用方法",
     "addMcpConfig": "MCP設定を追加",
     "notAvailable": "利用不可",

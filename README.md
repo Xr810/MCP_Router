@@ -1,99 +1,29 @@
-<h1 align="center">MCP Router</h1>
-<h3 align="center">A Unified MCP Server Management App</h3>
+# MCP Router
 
-<div align="center">
+A fork of [MCP Router](https://github.com/mcp-router/mcp-router) — desktop MCP aggregator and **Enterprise Gateway** for Hermes / NemoHermes.
 
-[![GitHub stars](https://img.shields.io/github/stars/mcp-router/mcp-router?style=flat&logo=github&label=Star)](https://github.com/mcp-router/mcp-router)
-[![Discord](https://img.shields.io/badge/Discord-Join%20Us-7289DA?style=flat&logo=discord)](https://discord.com/invite/dwG9jPrhxB)
-[![X](https://img.shields.io/badge/X(Twitter)-@mcp__router-1DA1F2?style=flat&logo=x)](https://x.com/mcp_router)
+## What this fork adds
 
-[English | [日本語](https://github.com/mcp-router/mcp-router/blob/main/README_ja.md) | [中文](https://github.com/mcp-router/mcp-router/blob/main/README_zh.md)]
+- Official MCP Router branding
+- HTTP enterprise gateway (`0.0.0.0` bind, Bearer tokens, client endpoint URL)
+- Hermes-first Apps flow with native HTTP YAML (`url` + `Authorization`)
+- Windows Azure packaging workflow for low-RAM VMs
 
-</div>
+## Docs
 
-## 🎯 Overview
+- End-to-end Azure + Hermes: [`docs/JE_AZURE_HERMES.md`](docs/JE_AZURE_HERMES.md)
 
-**MCP Router** is a desktop application for simplifies the management of Model Context Protocol (MCP) servers.
+## Repo
 
-### ✨ Key Features
+- https://github.com/meghamshb2006/mcprouter
 
-- 🌐 **Universal** — Connect to any MCP server
-  - Remote or local servers
-  - Supports DXT, JSON, Manual
-- 🖥️ **Cross-platform** — Windows and macOS
-- 🗂 **Context Management** — Keep growing MCP server contexts organized
-  - Group MCP servers into Projects
-  - Manage modes with Workspaces (like browser profiles)
-  - Toggle tools on/off per server
+## Develop
 
-## 🔒 Privacy & Security
-
-### Your Data Stays Local
-- ✅ **All data is stored locally** - Request logs, configurations, and server data remain on your device
-- ✅ **Credentials are secure** - API keys and authentication credentials are stored locally and never transmitted externally
-- ✅ **Complete control** - You have full control over your MCP server connections and data
-
-### Transparency
-- 🔍 **Auditable** - The desktop application source code is publicly available on GitHub
-- 🛡️ **Verifiable privacy** - You can verify that your data stays local by examining the application code
-- 🤝 **Community-driven** - Security improvements and audits are welcomed from the [community](https://discord.com/invite/dwG9jPrhxB)
-
-
-## 📥 Installation
-
-Download from our [releases page](https://github.com/mcp-router/mcp-router/releases).
-
-After setting up MCP Router, you can connect to MCP Router using the CLI:
 ```bash
-# Set your MCP Router token (Issued when adding a custom app)
-export MCPR_TOKEN="mcpr_your_token"
-# To connect to MCP Router, run:
-npx -y @mcp_router/cli connect
-
-# If you want to use project, run:
-npx -y @mcp_router/cli connect --project <project-name>
+pnpm install
+pnpm --filter @mcp_router/electron dev
 ```
 
-## 🚀 Features
+## License
 
-### 📊 Centralized Server Management
-Easily toggle MCP servers on/off, enable/disable individual tools, and organize servers into Projects and Workspaces — all from a single dashboard
-
-<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/toggle.png" alt="Server Management" width="600">
-
-<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/tool-toggle.png" alt="Toggle Tool" width="600">
-
-<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/project-management.png" alt="Project Management" width="600">
-
-<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/workspace.png" alt="Workspace Management" width="600">
-
-
-### 🌐 Universal Connectivity
-Add and connect to any MCP server with support for both local and remote servers
-
-<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/add-mcp-manual.png" alt="Universal Connectivity" width="600">
-
-### 🔗 One-Click Integration
-Seamlessly connect with popular AI tools like Claude, Cline, Windsurf, Cursor, or your custom client
-
-<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/token.png" alt="One-Click Integration" width="600">
-
-### 📈 Comprehensive Logging & Analytics
-Monitor and display detailed request logs
-
-<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/stats.png" alt="Logs and Statistics" width="600">
-
-
-## 🤝 Community
-
-Join our community to get help, share ideas, and stay updated:
-
-- 💬 [Discord Community](https://discord.com/invite/dwG9jPrhxB)
-- 🐦 [Follow us on X (Twitter)](https://x.com/mcp_router)
-- ⭐ [Star us on GitHub](https://github.com/mcp-router/mcp-router)
-
-[![Star History Chart](https://api.star-history.com/svg?repos=mcp-router/mcp-router&type=date&legend=top-left)](https://www.star-history.com/#mcp-router/mcp-router&type=date&legend=top-left)
-
-## 📝 License
-
-This project is licensed under the Sustainable Use License - see the [LICENSE.md](LICENSE.md) file for details.
+See [LICENSE.md](LICENSE.md). Upstream MCP Router attribution retained.

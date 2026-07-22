@@ -101,8 +101,8 @@ const config: ForgeConfig = {
       config: {
         authToken: process.env.GITHUB_TOKEN,
         repository: {
-          owner: "mcp-router",
-          name: "mcp-router",
+          owner: "meghamshb2006",
+          name: "mcprouter",
         },
         prerelease: true,
         draft: true,

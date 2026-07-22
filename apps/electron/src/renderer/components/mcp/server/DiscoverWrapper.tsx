@@ -15,13 +15,17 @@ const DiscoverWrapper: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="space-y-6">
-      {/* Breadcrumbs: Servers > Add */}
+    <div className="flex flex-col gap-5 max-w-4xl">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to="/servers">{t("serverList.title")}</Link>
+              <Link
+                to="/servers"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                {t("serverList.title")}
+              </Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
@@ -31,8 +35,18 @@ const DiscoverWrapper: React.FC = () => {
         </BreadcrumbList>
       </Breadcrumb>
 
-      {/* Page title */}
-      <h1 className="text-3xl font-bold">{t("discoverServers.title")}</h1>
+      <div className="space-y-1">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          {t("discoverServers.title")}
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          {t(
+            "discoverServers.subtitle",
+            "Add a local command, remote HTTP endpoint, or import an existing config.",
+          )}
+        </p>
+      </div>
+
       <Manual />
     </div>
   );

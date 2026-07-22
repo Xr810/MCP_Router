@@ -2,12 +2,12 @@ import React from "react";
 import { MCPServer } from "@mcp_router/shared";
 import { Card, CardContent } from "@mcp_router/ui";
 import { Badge } from "@mcp_router/ui";
-import { Switch } from "@mcp_router/ui";
 import { Button } from "@mcp_router/ui";
 import { AlertCircle, Trash2 } from "lucide-react";
 import { cn } from "@/renderer/utils/tailwind-utils";
 import { useTranslation } from "react-i18next";
 import { hasUnsetRequiredParams } from "@/renderer/utils/server-validation-utils";
+import { ServerPowerCoupler } from "@/renderer/components/mcp/server/ServerPowerCoupler";
 
 interface ServerCardCompactProps {
   server: MCPServer;
@@ -117,8 +117,8 @@ export const ServerCardCompact: React.FC<ServerCardCompactProps> = ({
               </Button>
             )}
 
-            <Switch
-              checked={server.status === "running"}
+            <ServerPowerCoupler
+              status={server.status}
               disabled={
                 server.status === "starting" ||
                 server.status === "stopping" ||
@@ -129,8 +129,7 @@ export const ServerCardCompact: React.FC<ServerCardCompactProps> = ({
                   ? t("serverList.requiredParamsNotSet")
                   : undefined
               }
-              onCheckedChange={onToggle}
-              className="data-[state=checked]:bg-primary"
+              onToggle={onToggle}
             />
 
             <Button

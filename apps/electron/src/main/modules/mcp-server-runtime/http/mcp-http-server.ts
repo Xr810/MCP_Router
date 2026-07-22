@@ -62,8 +62,12 @@ export class MCPHttpServer {
     // Parse JSON request bodies
     this.app.use(express.json());
 
-    // Enable CORS
-    this.app.use(cors());
+    // CORS: permissive on localhost binds; disable browser CORS when exposed remotely
+    const isLocalBind =
+      this.host === "127.0.0.1" ||
+      this.host === "localhost" ||
+      this.host === "::1";
+    this.app.use(cors(isLocalBind ? undefined : { origin: false }));
 
     // 認証ミドルウェアの作成
     const authMiddleware = (

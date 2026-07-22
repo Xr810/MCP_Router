@@ -2,7 +2,6 @@ import React, { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import {
   IconChevronRight,
-  IconSearch,
   IconPlayerPlay,
   IconCheck,
   IconX,
@@ -14,7 +13,6 @@ import {
   ActivityItem,
   ActivitySession,
 } from "@mcp_router/shared";
-import { Card } from "@mcp_router/ui";
 import { cn } from "@/renderer/utils/tailwind-utils";
 
 interface ActivityLogProps {
@@ -75,7 +73,7 @@ const ExecutionRow: React.FC<{
           size={14}
           className={cn(
             "shrink-0",
-            hasError ? "text-destructive" : "text-primary",
+            hasError ? "text-destructive" : "text-[#2563eb]",
           )}
         />
         <span
@@ -92,7 +90,7 @@ const ExecutionRow: React.FC<{
         {hasError ? (
           <IconX size={14} className="text-destructive shrink-0" />
         ) : (
-          <IconCheck size={14} className="text-green-600 shrink-0" />
+          <IconCheck size={14} className="text-[#2563eb] shrink-0" />
         )}
       </button>
 
@@ -230,7 +228,7 @@ const getActivityIcon = (
 ): React.ReactNode => {
   const iconClass = cn(
     "shrink-0",
-    hasError ? "text-destructive" : "text-primary",
+    hasError ? "text-destructive" : "text-[#2563eb]",
   );
 
   switch (type) {
@@ -241,8 +239,12 @@ const getActivityIcon = (
       return <IconMessage size={14} className={iconClass} />;
     case "ReadResource":
       return <IconFile size={14} className={iconClass} />;
-    default:
+    case "ToolDiscovery":
       return <IconPlayerPlay size={14} className={iconClass} />;
+    default: {
+      const _exhaustive: never = type;
+      return _exhaustive;
+    }
   }
 };
 
@@ -319,14 +321,12 @@ const StandaloneCard: React.FC<{
         {hasError ? (
           <IconX size={14} className="text-destructive shrink-0" />
         ) : (
-          <IconCheck size={14} className="text-green-600 shrink-0" />
+          <IconCheck size={14} className="text-[#2563eb] shrink-0" />
         )}
       </button>
 
-      {/* 展開時の詳細 */}
       {isExpanded && (
         <div className="px-3 pb-3 pt-1 border-t border-border/50 bg-muted/10 text-xs space-y-2">
-          {/* Arguments (ReadResource以外) */}
           {hasArguments && (
             <div>
               <p className="text-muted-foreground font-medium mb-1">
@@ -387,25 +387,24 @@ const ActivityLog: React.FC<ActivityLogProps> = ({
 
   if (loading) {
     return (
-      <Card className="p-4 h-full">
-        <div className="flex justify-center items-center h-32">
-          <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent" />
+      <div className="rounded-lg border border-border p-4 h-full">
+        <div className="flex justify-center items-center h-24">
+          <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#2563eb] border-t-transparent" />
         </div>
-      </Card>
+      </div>
     );
   }
 
   if (items.length === 0) {
     return (
-      <Card className="p-4 h-full">
-        <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
-          <IconSearch size={16} className="text-muted-foreground" />
-          {t("logs.activity.log.title", "Activity Log")}
+      <div className="rounded-lg border border-border p-4 h-full">
+        <h3 className="text-sm font-semibold tracking-tight mb-3">
+          {t("logs.activity.log.title", "Activity")}
         </h3>
         <div className="flex items-center justify-center h-24 text-muted-foreground text-sm">
           {t("logs.activity.log.empty", "No activities for selected date")}
         </div>
-      </Card>
+      </div>
     );
   }
 
@@ -421,11 +420,10 @@ const ActivityLog: React.FC<ActivityLogProps> = ({
   };
 
   return (
-    <Card className="p-4 h-full overflow-hidden flex flex-col">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium flex items-center gap-2">
-          <IconSearch size={16} className="text-muted-foreground" />
-          {t("logs.activity.log.title", "Activity Log")}
+    <div className="rounded-lg border border-border p-4 h-full overflow-hidden flex flex-col min-h-0">
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <h3 className="text-sm font-semibold tracking-tight">
+          {t("logs.activity.log.title", "Activity")}
         </h3>
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           <span>
@@ -437,7 +435,7 @@ const ActivityLog: React.FC<ActivityLogProps> = ({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto space-y-2">
+      <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
         {items.map((item) => {
           if (item.type === "session") {
             return (
@@ -460,7 +458,7 @@ const ActivityLog: React.FC<ActivityLogProps> = ({
           }
         })}
       </div>
-    </Card>
+    </div>
   );
 };
 

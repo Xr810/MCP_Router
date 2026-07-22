@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle } from "@mcp_router/ui";
 import {
   Select,
   SelectContent,
@@ -11,53 +10,75 @@ import {
 import { Button } from "@mcp_router/ui";
 import { Switch } from "@mcp_router/ui";
 import { Input } from "@mcp_router/ui";
-import { Textarea } from "@mcp_router/ui";
 import { toast } from "sonner";
 import { useAuthStore } from "../../stores";
-import {
-  IconBrandDiscord,
-  IconCloud,
-  IconLock,
-  IconUser,
-} from "@tabler/icons-react";
+import { IconCloud, IconLock } from "@tabler/icons-react";
 import { electronPlatformAPI as platformAPI } from "../../platform-api/electron-platform-api";
 import { postHogService } from "../../services/posthog-service";
 import type { CloudSyncStatus } from "@mcp_router/shared";
-import { ThemeToggle } from "@/renderer/components/ThemeToggle";
+import { cn } from "@/renderer/utils/tailwind-utils";
+
+const fieldClass =
+  "h-10 bg-background border-border focus-visible:ring-[#2563eb]/35 focus-visible:border-[#2563eb]/50";
+
+const SectionLabel: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => (
+  <h2 className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+    {children}
+  </h2>
+);
+
+const SettingRow: React.FC<{
+  label: string;
+  description?: string;
+  children: React.ReactNode;
+  className?: string;
+}> = ({ label, description, children, className }) => (
+  <div
+    className={cn(
+      "flex items-center justify-between gap-6 py-3.5",
+      className,
+    )}
+  >
+    <div className="min-w-0 space-y-0.5 pr-4">
+      <p className="text-sm font-medium text-foreground">{label}</p>
+      {description ? (
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          {description}
+        </p>
+      ) : null}
+    </div>
+    <div className="shrink-0">{children}</div>
+  </div>
+);
 
 const Settings: React.FC = () => {
   const { t, i18n } = useTranslation();
-  const [isRefreshingSubscription, setIsRefreshingSubscription] =
-    useState(false);
   const [loadExternalMCPConfigs, setLoadExternalMCPConfigs] =
     useState<boolean>(true);
-  const [analyticsEnabled, setAnalyticsEnabled] = useState<boolean>(true);
+  const [analyticsEnabled, setAnalyticsEnabled] = useState<boolean>(false);
   const [autoUpdateEnabled, setAutoUpdateEnabled] = useState<boolean>(true);
   const [showWindowOnStartup, setShowWindowOnStartup] = useState<boolean>(true);
   const [mcpRemoteAccessEnabled, setMcpRemoteAccessEnabled] =
     useState<boolean>(false);
-  const [mcpHttpHost, setMcpHttpHost] = useState("0.0.0.0");
-  const [mcpHttpPort, setMcpHttpPort] = useState("3282");
+  const [mcpHttpHost, setMcpHttpHost] = useState("");
+  const [mcpHttpPort, setMcpHttpPort] = useState("");
   const [mcpGatewayPublicUrl, setMcpGatewayPublicUrl] = useState("");
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
-  // Cloud Sync state
   const [cloudSyncStatus, setCloudSyncStatus] =
     useState<CloudSyncStatus | null>(null);
   const [isLoadingCloudSync, setIsLoadingCloudSync] = useState(false);
   const [cloudSyncPassphrase, setCloudSyncPassphrase] = useState("");
   const [isSettingPassphrase, setIsSettingPassphrase] = useState(false);
 
-  // Feedback state
-  const [feedback, setFeedback] = useState("");
-  const [isSendingFeedback, setIsSendingFeedback] = useState(false);
+  const [gatewayRestartNeeded, setGatewayRestartNeeded] = useState(false);
 
-  // Zustand stores
   const {
     isAuthenticated,
     userInfo,
     isLoggingIn,
-    login,
     logout,
     checkAuthStatus,
     subscribeToAuthChanges,
@@ -67,7 +88,6 @@ const Settings: React.FC = () => {
     i18n.changeLanguage(value);
   };
 
-  // Get normalized language code for select
   const getCurrentLanguage = () => {
     const currentLang = i18n.language;
     if (currentLang.startsWith("en")) return "en";
@@ -76,7 +96,6 @@ const Settings: React.FC = () => {
     return "en";
   };
 
-  // 認証状態の監視
   useEffect(() => {
     checkAuthStatus();
     const unsubscribe = subscribeToAuthChanges();
@@ -85,18 +104,19 @@ const Settings: React.FC = () => {
     };
   }, [checkAuthStatus, subscribeToAuthChanges]);
 
-  // Load settings on mount
   useEffect(() => {
     const loadSettings = async () => {
       try {
         const settings = await platformAPI.settings.get();
         setLoadExternalMCPConfigs(settings.loadExternalMCPConfigs ?? true);
-        setAnalyticsEnabled(settings.analyticsEnabled ?? true);
+        setAnalyticsEnabled(settings.analyticsEnabled ?? false);
         setAutoUpdateEnabled(settings.autoUpdateEnabled ?? true);
         setShowWindowOnStartup(settings.showWindowOnStartup ?? true);
         setMcpRemoteAccessEnabled(settings.mcpRemoteAccessEnabled ?? false);
-        setMcpHttpHost(settings.mcpHttpHost || "0.0.0.0");
-        setMcpHttpPort(String(settings.mcpHttpPort ?? 3282));
+        setMcpHttpHost(settings.mcpHttpHost || "");
+        setMcpHttpPort(
+          settings.mcpHttpPort != null ? String(settings.mcpHttpPort) : "",
+        );
         setMcpGatewayPublicUrl(settings.mcpGatewayPublicUrl || "");
       } catch {
         console.log("Failed to load settings, using defaults");
@@ -105,7 +125,6 @@ const Settings: React.FC = () => {
     loadSettings();
   }, []);
 
-  // Load Cloud Sync status
   useEffect(() => {
     const loadCloudSyncStatus = async () => {
       try {
@@ -121,49 +140,20 @@ const Settings: React.FC = () => {
     loadCloudSyncStatus();
   }, []);
 
-  // Settingsページ表示時にサブスクリプション情報を更新
   useEffect(() => {
     if (isAuthenticated) {
-      const refreshSubscriptionInfo = async () => {
-        await checkAuthStatus(true);
-      };
-      refreshSubscriptionInfo();
+      void checkAuthStatus(true);
     }
   }, [isAuthenticated, checkAuthStatus]);
 
-  // ログイン処理
-  const handleLogin = async () => {
-    try {
-      await login();
-    } catch (error) {
-      console.error("ログインに失敗しました:", error);
-    }
-  };
-
-  // ログアウト処理
   const handleLogout = async () => {
     try {
       await logout();
     } catch (error) {
-      console.error("ログアウトに失敗しました:", error);
+      console.error("Logout failed:", error);
     }
   };
 
-  // サブスクリプション情報の更新処理
-  const handleRefreshSubscription = async () => {
-    if (!isAuthenticated || isRefreshingSubscription) return;
-
-    try {
-      setIsRefreshingSubscription(true);
-      await checkAuthStatus(true);
-    } catch (error) {
-      console.error("サブスクリプション情報の更新に失敗しました:", error);
-    } finally {
-      setIsRefreshingSubscription(false);
-    }
-  };
-
-  // Handle external MCP configs toggle
   const handleExternalMCPConfigsToggle = async (checked: boolean) => {
     setLoadExternalMCPConfigs(checked);
     setIsSavingSettings(true);
@@ -181,7 +171,6 @@ const Settings: React.FC = () => {
     }
   };
 
-  // Handle analytics toggle
   const handleAnalyticsToggle = async (checked: boolean) => {
     setAnalyticsEnabled(checked);
     setIsSavingSettings(true);
@@ -203,7 +192,6 @@ const Settings: React.FC = () => {
     }
   };
 
-  // Handle auto update toggle
   const handleAutoUpdateToggle = async (checked: boolean) => {
     setAutoUpdateEnabled(checked);
     setIsSavingSettings(true);
@@ -221,7 +209,6 @@ const Settings: React.FC = () => {
     }
   };
 
-  // Handle startup visibility toggle
   const handleStartupVisibilityToggle = async (checked: boolean) => {
     setShowWindowOnStartup(checked);
     setIsSavingSettings(true);
@@ -256,20 +243,27 @@ const Settings: React.FC = () => {
         mcpGatewayPublicUrl: mcpGatewayPublicUrl.trim(),
       });
       setMcpHttpPort(String(port));
-      toast.success(
-        mcpRemoteAccessEnabled
-          ? t("settings.remoteMcpRestartRequired")
-          : t("settings.remoteMcpSaved"),
-      );
+      setGatewayRestartNeeded(true);
+      toast.success(t("settings.remoteMcpRestartRequired"));
     } catch (error) {
-      console.error("Failed to save remote MCP settings:", error);
-      toast.error("Failed to save remote MCP settings");
+      console.error("Failed to save gateway settings:", error);
+      toast.error(
+        t("settings.remoteMcpSaveFailed", "Failed to save gateway settings"),
+      );
     } finally {
       setIsSavingSettings(false);
     }
   };
 
-  // Cloud Sync handlers
+  const handleRestartApp = async () => {
+    try {
+      await platformAPI.packages.system.restartApp();
+    } catch (error) {
+      console.error("Failed to restart app:", error);
+      toast.error(t("settings.restartFailed", "Failed to restart the app"));
+    }
+  };
+
   const handleCloudSyncToggle = async (checked: boolean) => {
     if (!cloudSyncStatus) return;
     try {
@@ -285,7 +279,6 @@ const Settings: React.FC = () => {
     try {
       setIsSettingPassphrase(true);
       await platformAPI.cloudSync.setPassphrase(cloudSyncPassphrase);
-      // パスフレーズ設定後、自動でCloud Syncを有効化
       const newStatus = await platformAPI.cloudSync.setEnabled(true);
       setCloudSyncStatus(newStatus);
       setCloudSyncPassphrase("");
@@ -297,27 +290,6 @@ const Settings: React.FC = () => {
     }
   };
 
-  // Feedback handler
-  const handleSubmitFeedback = async () => {
-    if (!feedback.trim()) return;
-    setIsSendingFeedback(true);
-    try {
-      const success = await platformAPI.settings.submitFeedback(
-        feedback.trim(),
-      );
-      if (success) {
-        setFeedback("");
-        toast.success(t("feedback.sent"));
-      } else {
-        toast.error(t("feedback.failed"));
-      }
-    } catch {
-      toast.error(t("feedback.failed"));
-    } finally {
-      setIsSendingFeedback(false);
-    }
-  };
-
   const isSubscribed =
     userInfo?.subscriptionStatus && userInfo.subscriptionStatus !== "canceled";
 
@@ -326,228 +298,167 @@ const Settings: React.FC = () => {
       ? userInfo.planName
       : t("settings.planNameUnknown");
 
-  const subscriptionDisplay = isSubscribed
-    ? planNameLabel
-    : t("settings.notSubscribed");
-
   return (
-    <div className="p-6 flex flex-col gap-6">
-      <h1 className="text-3xl font-bold">{t("common.settings")}</h1>
+    <div className="flex flex-col h-full w-full gap-8">
+      <div className="space-y-1">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          {t("common.settings")}
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          {t("settings.pageDescription")}
+        </p>
+      </div>
 
-      {/* Account & Plan Hero Card */}
-      <Card className="border-2">
-        <CardHeader>
-          <CardTitle className="text-xl flex items-center gap-2">
-            <IconUser className="h-5 w-5" />
-            {t("settings.accountAndPlan")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* User Info & Plan Section */}
-          {isAuthenticated ? (
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-lg font-semibold">
+      {isAuthenticated && (
+        <section className="space-y-3">
+          <SectionLabel>{t("settings.account")}</SectionLabel>
+          <div className="border-t border-border">
+            <div className="flex items-center justify-between gap-4 py-3.5">
+              <div className="min-w-0">
+                <p className="text-sm font-medium truncate">
                   {userInfo?.name || userInfo?.userId}
                 </p>
-                <div className="flex items-center gap-2 mt-1">
-                  {isSubscribed ? (
-                    <span className="text-sm font-medium text-purple-600 dark:text-purple-400">
-                      {planNameLabel}
-                    </span>
-                  ) : (
-                    <>
-                      <span className="text-sm text-muted-foreground">
-                        Free
-                      </span>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="h-auto p-0 text-sm"
-                        onClick={() =>
-                          window.open(
-                            "https://mcp-router.net/en/profile",
-                            "_blank",
-                          )
-                        }
-                      >
-                        {t("settings.getPro")} →
-                      </Button>
-                    </>
-                  )}
-                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {isSubscribed ? planNameLabel : t("settings.notSubscribed")}
+                </p>
               </div>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleLogout}
                 disabled={isLoggingIn}
+                className="h-9"
               >
                 {isLoggingIn ? t("settings.loggingOut") : t("settings.logout")}
               </Button>
             </div>
-          ) : (
-            <div className="p-4 rounded-lg bg-slate-100 dark:bg-slate-800">
-              <p className="text-sm text-muted-foreground mb-3">
-                {t("settings.loginOptionalDescription")}
-              </p>
-              <Button
-                onClick={handleLogin}
-                disabled={isLoggingIn}
-                className="w-full"
-              >
-                {isLoggingIn ? t("settings.loggingIn") : t("settings.login")}
-              </Button>
-            </div>
-          )}
 
-          {/* Pro Features Section */}
-          {isAuthenticated && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                <span className="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold">
-                  Pro
-                </span>
-                {t("settings.proFeatures")}
-              </div>
-
-              {/* Cloud Sync */}
-              <div className="p-4 rounded-lg border border-slate-200 dark:border-slate-700 space-y-4">
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <IconCloud className="h-5 w-5 text-purple-500" />
-                    <div>
-                      <p className="font-medium">{t("settings.cloudSync")}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {t("settings.cloudSyncDescription")}
-                      </p>
-                    </div>
+            <div className="border-t border-border py-3.5 space-y-3">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <IconCloud className="h-4 w-4 text-[#2563eb] shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium">
+                      {t("settings.cloudSync")}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("settings.cloudSyncDescription")}
+                    </p>
                   </div>
-                  {/* Pro限定バッジ or トグル（パスフレーズ設定済みの場合のみ） */}
-                  {!isSubscribed ? (
-                    <span className="text-xs px-2 py-1 rounded bg-slate-200 dark:bg-slate-700 text-muted-foreground">
-                      {t("settings.proOnly")}
-                    </span>
-                  ) : (
-                    cloudSyncStatus?.hasPassphrase && (
-                      <Switch
-                        checked={cloudSyncStatus?.enabled ?? false}
-                        onCheckedChange={handleCloudSyncToggle}
-                        disabled={
-                          isLoadingCloudSync ||
-                          !cloudSyncStatus?.encryptionAvailable
-                        }
-                      />
-                    )
-                  )}
                 </div>
-
-                {/* Pro users: State-based UI */}
-                {isSubscribed && cloudSyncStatus && (
-                  <>
-                    {cloudSyncStatus.hasPassphrase ? (
-                      /* パスフレーズ設定済み: ステータス表示 */
-                      <div className="pt-3 border-t border-slate-200 dark:border-slate-700 space-y-2">
-                        <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-                          <IconLock className="h-4 w-4" />
-                          {t("settings.passphraseSet")}
-                        </div>
-                        {cloudSyncStatus.enabled &&
-                          cloudSyncStatus.lastSyncedAt && (
-                            <p className="text-xs text-muted-foreground">
-                              {t("settings.lastSynced")}:{" "}
-                              {new Date(
-                                cloudSyncStatus.lastSyncedAt,
-                              ).toLocaleString()}
-                            </p>
-                          )}
-                        {cloudSyncStatus.lastError && (
-                          <p className="text-xs text-red-500">
-                            {cloudSyncStatus.lastError}
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      /* パスフレーズ未設定: 入力欄 + 有効化ボタン */
-                      <div className="pt-3 border-t border-slate-200 dark:border-slate-700 space-y-3">
-                        <p className="text-sm text-muted-foreground">
-                          {t("settings.setPassphraseDescription")}
-                        </p>
-                        <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">
-                          {t("settings.passphraseWarning")}
-                        </p>
-                        <div className="flex gap-2">
-                          <Input
-                            type="password"
-                            placeholder={t("settings.passphrasePlaceholder")}
-                            value={cloudSyncPassphrase}
-                            onChange={(e) =>
-                              setCloudSyncPassphrase(e.target.value)
-                            }
-                            className="flex-1"
-                          />
-                          <Button
-                            size="sm"
-                            onClick={handleSetPassphraseAndEnable}
-                            disabled={
-                              isSettingPassphrase || !cloudSyncPassphrase.trim()
-                            }
-                          >
-                            {isSettingPassphrase
-                              ? t("common.saving")
-                              : t("settings.enableCloudSync")}
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </>
+                {!isSubscribed ? (
+                  <span className="text-[11px] text-muted-foreground shrink-0">
+                    {t("settings.proOnly")}
+                  </span>
+                ) : (
+                  cloudSyncStatus?.hasPassphrase && (
+                    <Switch
+                      checked={cloudSyncStatus?.enabled ?? false}
+                      onCheckedChange={handleCloudSyncToggle}
+                      disabled={
+                        isLoadingCloudSync ||
+                        !cloudSyncStatus?.encryptionAvailable
+                      }
+                    />
+                  )
                 )}
               </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
-      {/* JE / Azure Remote MCP Access */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">
-            {t("settings.remoteMcpAccess")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-5">
-          <p className="text-sm text-muted-foreground">
-            {t("settings.remoteMcpAccessDescription")}
-          </p>
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <label className="text-sm font-medium">
-                {t("settings.remoteMcpAccessEnabled")}
-              </label>
+              {isSubscribed && cloudSyncStatus && (
+                <>
+                  {cloudSyncStatus.hasPassphrase ? (
+                    <div className="space-y-1 pl-7">
+                      <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400">
+                        <IconLock className="h-3.5 w-3.5" />
+                        {t("settings.passphraseSet")}
+                      </div>
+                      {cloudSyncStatus.enabled &&
+                        cloudSyncStatus.lastSyncedAt && (
+                          <p className="text-xs text-muted-foreground">
+                            {t("settings.lastSynced")}:{" "}
+                            {new Date(
+                              cloudSyncStatus.lastSyncedAt,
+                            ).toLocaleString()}
+                          </p>
+                        )}
+                      {cloudSyncStatus.lastError && (
+                        <p className="text-xs text-destructive">
+                          {cloudSyncStatus.lastError}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-3 pl-7">
+                      <p className="text-xs text-muted-foreground">
+                        {t("settings.setPassphraseDescription")}
+                      </p>
+                      <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                        {t("settings.passphraseWarning")}
+                      </p>
+                      <div className="flex gap-2">
+                        <Input
+                          type="password"
+                          value={cloudSyncPassphrase}
+                          onChange={(e) =>
+                            setCloudSyncPassphrase(e.target.value)
+                          }
+                          className={cn("flex-1", fieldClass)}
+                        />
+                        <Button
+                          size="sm"
+                          onClick={handleSetPassphraseAndEnable}
+                          disabled={
+                            isSettingPassphrase || !cloudSyncPassphrase.trim()
+                          }
+                          className="h-10 bg-[#2563eb] hover:bg-[#1d4ed8] text-white border-0"
+                        >
+                          {isSettingPassphrase
+                            ? t("common.saving")
+                            : t("settings.enableCloudSync")}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
-            <Switch
-              checked={mcpRemoteAccessEnabled}
-              onCheckedChange={setMcpRemoteAccessEnabled}
-              disabled={isSavingSettings}
-            />
           </div>
+        </section>
+      )}
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
+      {/* Enterprise Gateway */}
+      <section className="space-y-3 w-full">
+        <div className="flex items-center justify-between gap-4">
+          <SectionLabel>{t("settings.remoteMcpAccess")}</SectionLabel>
+          <Switch
+            checked={mcpRemoteAccessEnabled}
+            onCheckedChange={setMcpRemoteAccessEnabled}
+            disabled={isSavingSettings}
+            aria-label={t("settings.remoteMcpAccessEnabled")}
+          />
+        </div>
+
+        <div
+          className={cn(
+            "border-t border-border pt-4 space-y-4 transition-opacity",
+            !mcpRemoteAccessEnabled && "opacity-45",
+          )}
+        >
+          <div className="grid gap-4 sm:grid-cols-[1fr_8rem]">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">
                 {t("settings.mcpHttpHost")}
               </label>
               <Input
                 value={mcpHttpHost}
                 onChange={(e) => setMcpHttpHost(e.target.value)}
-                placeholder={t("settings.mcpHttpHostPlaceholder")}
                 disabled={isSavingSettings || !mcpRemoteAccessEnabled}
+                autoComplete="off"
+                className={fieldClass}
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">
                 {t("settings.mcpHttpPort")}
               </label>
               <Input
@@ -555,52 +466,57 @@ const Settings: React.FC = () => {
                 value={mcpHttpPort}
                 onChange={(e) => setMcpHttpPort(e.target.value)}
                 disabled={isSavingSettings || !mcpRemoteAccessEnabled}
+                autoComplete="off"
+                className={fieldClass}
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">
               {t("settings.mcpGatewayPublicUrl")}
             </label>
             <Input
               value={mcpGatewayPublicUrl}
               onChange={(e) => setMcpGatewayPublicUrl(e.target.value)}
-              placeholder={t("settings.mcpGatewayPublicUrlPlaceholder")}
               disabled={isSavingSettings}
+              autoComplete="off"
+              className={fieldClass}
             />
-            <p className="text-xs text-muted-foreground">
-              {t("settings.mcpGatewayPublicUrlDescription")}
-            </p>
           </div>
 
-          <Button
-            onClick={handleSaveRemoteMcpSettings}
-            disabled={isSavingSettings}
-          >
-            {isSavingSettings ? t("common.saving") : t("common.save")}
-          </Button>
-        </CardContent>
-      </Card>
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <Button
+              onClick={handleSaveRemoteMcpSettings}
+              disabled={isSavingSettings}
+              className="h-10 px-5 bg-[#2563eb] hover:bg-[#1d4ed8] text-white border-0"
+            >
+              {isSavingSettings ? t("common.saving") : t("common.save")}
+            </Button>
+            {gatewayRestartNeeded ? (
+              <Button
+                variant="outline"
+                onClick={handleRestartApp}
+                disabled={isSavingSettings}
+                className="h-10"
+              >
+                {t("settings.restartNow")}
+              </Button>
+            ) : null}
+          </div>
+        </div>
+      </section>
 
-      {/* Preferences Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">{t("settings.preferences")}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Language */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <label className="text-sm font-medium">
-                {t("common.language")}
-              </label>
-            </div>
+      {/* Application */}
+      <section className="space-y-3 w-full">
+        <SectionLabel>{t("settings.application")}</SectionLabel>
+        <div className="border-t border-border divide-y divide-border">
+          <SettingRow label={t("common.language")}>
             <Select
               value={getCurrentLanguage()}
               onValueChange={handleLanguageChange}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[9.5rem] h-10">
                 <SelectValue placeholder={t("common.language")} />
               </SelectTrigger>
               <SelectContent>
@@ -609,126 +525,53 @@ const Settings: React.FC = () => {
                 <SelectItem value="ja">日本語</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </SettingRow>
 
-          {/* Theme — toggleable light / dark / system */}
-          <ThemeToggle variant="switch-row" />
-
-          {/* Auto Update */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <label className="text-sm font-medium">
-                {t("settings.autoUpdate")}
-              </label>
-              <p className="text-xs text-muted-foreground">
-                {t("settings.autoUpdateDescription")}
-              </p>
-            </div>
+          <SettingRow
+            label={t("settings.autoUpdate")}
+            description={t("settings.autoUpdateDescription")}
+          >
             <Switch
               checked={autoUpdateEnabled}
               onCheckedChange={handleAutoUpdateToggle}
               disabled={isSavingSettings}
             />
-          </div>
+          </SettingRow>
 
-          {/* Show Window on Startup */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <label className="text-sm font-medium">
-                {t("settings.showWindowOnStartup")}
-              </label>
-              <p className="text-xs text-muted-foreground">
-                {t("settings.showWindowOnStartupDescription")}
-              </p>
-            </div>
+          <SettingRow
+            label={t("settings.showWindowOnStartup")}
+            description={t("settings.showWindowOnStartupDescription")}
+          >
             <Switch
               checked={showWindowOnStartup}
               onCheckedChange={handleStartupVisibilityToggle}
               disabled={isSavingSettings}
             />
-          </div>
+          </SettingRow>
 
-          {/* Load External MCP Configs */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <label className="text-sm font-medium">
-                {t("settings.loadExternalMCPConfigs")}
-              </label>
-              <p className="text-xs text-muted-foreground">
-                {t("settings.loadExternalMCPConfigsDescription")}
-              </p>
-            </div>
+          <SettingRow
+            label={t("settings.loadExternalMCPConfigs")}
+            description={t("settings.loadExternalMCPConfigsDescription")}
+          >
             <Switch
               checked={loadExternalMCPConfigs}
               onCheckedChange={handleExternalMCPConfigsToggle}
               disabled={isSavingSettings}
             />
-          </div>
+          </SettingRow>
 
-          {/* Analytics */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <label className="text-sm font-medium">
-                {t("settings.analytics")}
-              </label>
-              <p className="text-xs text-muted-foreground">
-                {t("settings.analyticsDescription")}
-              </p>
-            </div>
+          <SettingRow
+            label={t("settings.analytics")}
+            description={t("settings.analyticsDescription")}
+          >
             <Switch
               checked={analyticsEnabled}
               onCheckedChange={handleAnalyticsToggle}
               disabled={isSavingSettings}
             />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Community & Feedback Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">{t("settings.community")}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Discord */}
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              {t("settings.communityDescription")}
-            </p>
-            <Button
-              variant="outline"
-              className="w-full flex items-center justify-center gap-2"
-              onClick={() =>
-                window.open("https://discord.gg/dwG9jPrhxB", "_blank")
-              }
-            >
-              <IconBrandDiscord className="h-5 w-5" />
-              {t("settings.joinDiscord")}
-            </Button>
-          </div>
-
-          {/* Feedback */}
-          <div className="space-y-3 pt-3 border-t border-slate-200 dark:border-slate-700">
-            <p className="text-sm text-muted-foreground">
-              {t("settings.feedbackDescription")}
-            </p>
-            <Textarea
-              value={feedback}
-              onChange={(e) => setFeedback(e.target.value)}
-              rows={3}
-              placeholder={t("feedback.placeholder")}
-              className="text-sm"
-            />
-            <Button
-              onClick={handleSubmitFeedback}
-              disabled={!feedback.trim() || isSendingFeedback}
-              className="w-full"
-            >
-              {isSendingFeedback ? t("common.loading") : t("common.send")}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </SettingRow>
+        </div>
+      </section>
     </div>
   );
 };

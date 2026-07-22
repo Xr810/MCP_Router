@@ -1,14 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Button } from "@mcp_router/ui";
 import { usePlatformAPI } from "@/renderer/platform-api";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@mcp_router/ui";
 import { Badge } from "@mcp_router/ui";
 import { useTranslation } from "react-i18next";
 import { Input } from "@mcp_router/ui";
@@ -335,108 +327,146 @@ const McpAppsManager: React.FC = () => {
   })();
 
   return (
-    <div className="space-y-4">
-      <div className="mb-4">
-        <h2 className="text-2xl font-bold">{t("mcpApps.title")}</h2>
-        <p className="text-muted-foreground">{t("mcpApps.description")}</p>
+    <div className="flex flex-col gap-5">
+      <div className="space-y-1">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          {t("mcpApps.title")}
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          {t("mcpApps.description")}
+        </p>
       </div>
 
-      {/* カスタムアプリ追加フォーム */}
-      <Card className="mb-4">
-        <CardHeader>
-          <CardTitle>{t("mcpApps.addCustomApp")}</CardTitle>
-          <CardDescription>{t("mcpApps.customAppDescription")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleAddCustomApp} className="flex gap-4 items-end">
-            <div className="flex-1">
-              <Input
-                id="customAppName"
-                value={customAppName}
-                onChange={(e) => setCustomAppName(e.target.value)}
-                placeholder={t("mcpApps.enterAppName")}
-              />
-            </div>
-            <Button type="submit">{t("mcpApps.addCustomApp")}</Button>
-          </form>
-        </CardContent>
-      </Card>
+      <section className="rounded-lg border border-border bg-card p-4">
+        <div className="space-y-1 mb-4">
+          <h2 className="text-base font-semibold tracking-tight">
+            {t("mcpApps.addCustomApp")}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {t("mcpApps.customAppDescription")}
+          </p>
+        </div>
+        <form onSubmit={handleAddCustomApp} className="flex gap-3 items-end">
+          <div className="flex-1">
+            <Input
+              id="customAppName"
+              value={customAppName}
+              onChange={(e) => setCustomAppName(e.target.value)}
+              placeholder={t("mcpApps.enterAppName")}
+              className="h-10"
+            />
+          </div>
+          <Button
+            type="submit"
+            className="h-10 bg-[#2563eb] hover:bg-[#1d4ed8] text-white border-0"
+          >
+            {t("mcpApps.addCustomApp")}
+          </Button>
+        </form>
+      </section>
 
       {loading ? (
-        <></>
+        <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">
+          {t("common.loading")}
+        </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-          {apps.map((app) => {
+        <div className="grid gap-4 md:grid-cols-2">
+          {[...apps]
+            .sort((a, b) => {
+              const rank = (name: string) =>
+                name.toLowerCase() === "hermes" ? 0 : 1;
+              return rank(a.name) - rank(b.name) || a.name.localeCompare(b.name);
+            })
+            .map((app) => {
             return (
-              <Card key={app.name} className="overflow-hidden">
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-2">
-                      {/* Display icon if available from backend */}
-                      {app.icon && (
-                        <div
-                          className="w-6 h-6 flex items-center justify-center"
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                          dangerouslySetInnerHTML={{
-                            __html: app.icon.replace(
-                              /<svg/g,
-                              '<svg style="width: 100%; height: 100%; max-width: 24px; max-height: 24px;"',
-                            ),
-                          }}
-                        />
-                      )}
-                      <CardTitle className="truncate max-w-[150px]">
+              <div
+                key={app.name}
+                className={
+                  app.name.toLowerCase() === "hermes"
+                    ? "rounded-lg border border-[#2563eb]/40 bg-card overflow-hidden flex flex-col ring-1 ring-[#2563eb]/15"
+                    : "rounded-lg border border-border bg-card overflow-hidden flex flex-col"
+                }
+              >
+                <div className="p-4 pb-3 flex justify-between items-start gap-3">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    {app.icon && (
+                      <div
+                        className="w-6 h-6 flex items-center justify-center shrink-0"
+                        dangerouslySetInnerHTML={{
+                          __html: app.icon.replace(
+                            /<svg/g,
+                            '<svg style="width: 100%; height: 100%; max-width: 24px; max-height: 24px;"',
+                          ),
+                        }}
+                      />
+                    )}
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-semibold tracking-tight truncate">
                         {app.name}
-                      </CardTitle>
+                      </h3>
+                      {app.name.toLowerCase() === "hermes" ? (
+                        <p className="text-[11px] text-[#2563eb] font-medium tracking-wide uppercase">
+                          Recommended for JE
+                        </p>
+                      ) : null}
                     </div>
-                    <div className="flex gap-2">{getStatusBadge(app)}</div>
                   </div>
-                  <CardDescription></CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <p className="text-sm break-words">
-                      {app.configured
-                        ? t("mcpApps.configured")
-                        : app.installed
-                          ? t("mcpApps.notConfigured")
-                          : t("mcpApps.installRequired")}
-                    </p>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex gap-2 justify-between flex-wrap">
-                  <div>
-                    {/* Add How To Use and Delete buttons to the left of the card footer */}
-                    <div className="flex gap-2 flex-wrap">
-                      {app.token && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openHowToUseModal(app)}
-                        >
-                          {t("mcpApps.howToUse")}
-                        </Button>
-                      )}
-                      {app.isCustom && (
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => openDeleteDialog(app)}
-                        >
-                          {t("mcpApps.delete")}
-                        </Button>
-                      )}
-                    </div>
+                  <div className="flex gap-2 shrink-0">{getStatusBadge(app)}</div>
+                </div>
+                <div className="px-4 pb-3 flex-1 space-y-2">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {app.configured
+                      ? t("mcpApps.configured")
+                      : app.installed
+                        ? t("mcpApps.notConfigured")
+                        : t("mcpApps.installRequired")}
+                  </p>
+                  {app.token ? (
+                    <button
+                      type="button"
+                      className="w-full text-left rounded-md border border-border bg-muted/20 px-2.5 py-1.5 font-mono text-[11px] text-muted-foreground truncate hover:text-foreground hover:border-[#2563eb]/40"
+                      title={t("mcpApps.copyToken", "Copy token")}
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(app.token!);
+                          toast.success(
+                            t("mcpApps.tokenCopied", "Token copied"),
+                          );
+                        } catch {
+                          toast.error(t("mcpApps.tokenCopyFailed", "Could not copy token"));
+                        }
+                      }}
+                    >
+                      {app.token}
+                    </button>
+                  ) : null}
+                </div>
+                <div className="px-4 py-3 border-t border-border bg-muted/15 flex gap-2 justify-between flex-wrap">
+                  <div className="flex gap-2 flex-wrap">
+                    {app.token && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openHowToUseModal(app)}
+                      >
+                        {t("mcpApps.howToUse")}
+                      </Button>
+                    )}
+                    {app.isCustom && (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => openDeleteDialog(app)}
+                      >
+                        {t("mcpApps.delete")}
+                      </Button>
+                    )}
                   </div>
                   <div>
                     {!app.configured && !app.token ? (
                       <Button
                         onClick={() => handleAddConfig(app.name)}
-                        variant="default"
+                        className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white border-0"
                       >
                         {app.installed
                           ? t("mcpApps.addMcpConfig")
@@ -447,8 +477,8 @@ const McpAppsManager: React.FC = () => {
                         {!app.configured && (
                           <Button
                             onClick={() => handleAddConfig(app.name)}
-                            variant="default"
                             size="sm"
+                            className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white border-0"
                           >
                             {t("mcpApps.addMcpConfig")}
                           </Button>
@@ -456,7 +486,7 @@ const McpAppsManager: React.FC = () => {
                         {app.hasOtherServers && (
                           <Button
                             onClick={() => handleUnifyConfig(app.name)}
-                            variant="default"
+                            variant="outline"
                             size="sm"
                           >
                             {t("mcpApps.unify")}
@@ -474,8 +504,8 @@ const McpAppsManager: React.FC = () => {
                       </div>
                     )}
                   </div>
-                </CardFooter>
-              </Card>
+                </div>
+              </div>
             );
           })}
         </div>

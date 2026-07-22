@@ -6,7 +6,7 @@
   "main": ".webpack/main",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mcp-router/mcp-router.git"
+    "url": "https://github.com/meghamshb2006/mcprouter.git"
   },
   "scripts": {
     "start": "electron-forge start",

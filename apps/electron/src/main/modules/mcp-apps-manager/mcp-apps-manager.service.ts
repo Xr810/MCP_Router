@@ -31,7 +31,7 @@ import {
   findStandardAppDefinition,
   getStandardAppIds,
 } from "./app-definitions";
-import { resolveMcpGatewayPublicUrl } from "@/main/modules/mcp-server-runtime/http/mcp-http-bind";
+import { resolveMcpGatewayPublicUrl, resolveMcpHttpBind } from "@/main/modules/mcp-server-runtime/http/mcp-http-bind";
 import { getSettingsService } from "@/main/modules/settings/settings.service";
 import os from "os";
 
@@ -399,27 +399,22 @@ export class McpAppsManagerService extends SingletonService<
 
   /**
    * Hermes Agent / NemoHermes YAML block for mcp-router.
-   * When gateway public URL is set, CLI connect uses --url (Azure remote).
+   * Native HTTP MCP (url + Bearer) — required for Mac Hermes → Azure gateway.
+   * Do not use @mcp_router/cli (npm 0.2.0 ignores --url).
    */
   private buildHermesMcpRouterYamlEntry(tokenId: string): string {
-    const publicUrl = resolveMcpGatewayPublicUrl(
-      getSettingsService().getSettings(),
-    );
-    const args = publicUrl
-      ? `["-y", "@mcp_router/cli@latest", "connect", "--url", "${publicUrl}"]`
-      : `["-y", "@mcp_router/cli@latest", "connect"]`;
-
-    let envBlock =
-      `    env:\n` + `      MCPR_TOKEN: "${tokenId}"\n`;
-    if (publicUrl) {
-      envBlock += `      MCPR_URL: "${publicUrl}"\n`;
+    const settings = getSettingsService().getSettings();
+    let gatewayUrl = resolveMcpGatewayPublicUrl(settings);
+    if (!gatewayUrl) {
+      const bind = resolveMcpHttpBind(settings);
+      gatewayUrl = `http://127.0.0.1:${bind.port}/mcp`;
     }
 
     return (
       `  mcp-router:\n` +
-      `    command: "npx"\n` +
-      `    args: ${args}\n` +
-      envBlock
+      `    url: "${gatewayUrl}"\n` +
+      `    headers:\n` +
+      `      Authorization: "Bearer ${tokenId}"\n`
     );
   }
 

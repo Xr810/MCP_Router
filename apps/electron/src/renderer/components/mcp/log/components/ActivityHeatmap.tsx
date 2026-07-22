@@ -1,7 +1,6 @@
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { HeatmapData } from "@mcp_router/shared";
-import { Card } from "@mcp_router/ui";
 
 interface ActivityHeatmapProps {
   data: HeatmapData;
@@ -16,13 +15,13 @@ interface ActivityHeatmapProps {
  * アクティビティカウントに応じた色を返す
  */
 const getHeatColor = (count: number, maxCount: number): string => {
-  if (count === 0 || maxCount === 0) return "bg-muted/30";
+  if (count === 0 || maxCount === 0) return "bg-muted/40";
 
   const intensity = count / maxCount;
-  if (intensity >= 0.75) return "bg-primary";
-  if (intensity >= 0.5) return "bg-primary/70";
-  if (intensity >= 0.25) return "bg-primary/40";
-  return "bg-primary/20";
+  if (intensity >= 0.75) return "bg-[#2563eb]";
+  if (intensity >= 0.5) return "bg-[#2563eb]/70";
+  if (intensity >= 0.25) return "bg-[#2563eb]/40";
+  return "bg-[#2563eb]/20";
 };
 
 /**
@@ -122,11 +121,11 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
 
   if (loading) {
     return (
-      <Card className="p-4">
-        <div className="flex justify-center items-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="rounded-lg border border-border p-4">
+        <div className="flex justify-center items-center h-24">
+          <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#2563eb] border-t-transparent" />
         </div>
-      </Card>
+      </div>
     );
   }
 
@@ -142,15 +141,27 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
   ];
 
   return (
-    <Card className="p-4">
-      <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
-        <span>📊</span>
-        {t("logs.activity.heatmap.title", "Activity Heatmap")}
-      </h3>
+    <div className="rounded-lg border border-border p-4">
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <h3 className="text-sm font-semibold tracking-tight">
+          {t("logs.activity.heatmap.title", "Activity")}
+        </h3>
+        {selectedDate ? (
+          <p className="text-xs text-muted-foreground truncate">
+            {new Date(selectedDate).toLocaleDateString(t("locale", "en-US"), {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            })}
+            {" · "}
+            {dailyCounts.get(selectedDate) || 0}{" "}
+            {t("logs.activity.heatmap.activities", "activities")}
+          </p>
+        ) : null}
+      </div>
 
       <div className="overflow-x-auto">
         <div className="inline-flex gap-[3px]">
-          {/* 曜日ラベル（縦に7行） */}
           <div className="flex flex-col gap-[3px] pr-2">
             {dayLabels.map((label, i) => (
               <div
@@ -162,7 +173,6 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
             ))}
           </div>
 
-          {/* ヒートマップグリッド（週が列、曜日が行） */}
           {weeks.map((week, weekIndex) => (
             <div key={weekIndex} className="flex flex-col gap-[3px]">
               {Array.from({ length: 7 }).map((_, dayIndex) => {
@@ -182,11 +192,12 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
                 return (
                   <button
                     key={dayIndex}
+                    type="button"
                     onClick={() => onDateSelect(date)}
                     className={`
                       w-[12px] h-[12px] rounded-sm transition-all
                       ${getHeatColor(count, maxDailyCount)}
-                      ${isSelected ? "ring-2 ring-primary ring-offset-1 ring-offset-background" : ""}
+                      ${isSelected ? "ring-2 ring-[#2563eb] ring-offset-1 ring-offset-background" : ""}
                       hover:ring-1 hover:ring-muted-foreground
                     `}
                     title={`${formatDateShort(date, t("locale", "en-US"))}: ${count} ${t("logs.activity.heatmap.activities", "activities")}`}
@@ -198,35 +209,18 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
         </div>
       </div>
 
-      {/* 選択中の日付表示 */}
-      {selectedDate && (
-        <div className="mt-3 text-sm text-muted-foreground">
-          📅{" "}
-          {new Date(selectedDate).toLocaleDateString(t("locale", "en-US"), {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-            weekday: "long",
-          })}
-          {" - "}
-          {dailyCounts.get(selectedDate) || 0}{" "}
-          {t("logs.activity.heatmap.activities", "activities")}
-        </div>
-      )}
-
-      {/* 凡例 */}
       <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
         <span>{t("logs.activity.heatmap.less", "Less")}</span>
         <div className="flex gap-[3px]">
-          <div className="w-[12px] h-[12px] rounded-sm bg-muted/30" />
-          <div className="w-[12px] h-[12px] rounded-sm bg-primary/20" />
-          <div className="w-[12px] h-[12px] rounded-sm bg-primary/40" />
-          <div className="w-[12px] h-[12px] rounded-sm bg-primary/70" />
-          <div className="w-[12px] h-[12px] rounded-sm bg-primary" />
+          <div className="w-[12px] h-[12px] rounded-sm bg-muted/40" />
+          <div className="w-[12px] h-[12px] rounded-sm bg-[#2563eb]/20" />
+          <div className="w-[12px] h-[12px] rounded-sm bg-[#2563eb]/40" />
+          <div className="w-[12px] h-[12px] rounded-sm bg-[#2563eb]/70" />
+          <div className="w-[12px] h-[12px] rounded-sm bg-[#2563eb]" />
         </div>
         <span>{t("logs.activity.heatmap.more", "More")}</span>
       </div>
-    </Card>
+    </div>
   );
 };
 

@@ -48,10 +48,8 @@ const TabIntro: React.FC<{
   right?: React.ReactNode;
   children?: React.ReactNode;
 }> = ({ right, children }) => (
-  <div className="flex items-start justify-between pt-4 pb-2">
-    <div className="inline-flex items-start gap-2 text-sm">
-      <div>{children}</div>
-    </div>
+  <div className="flex items-start justify-between gap-3 pt-1 pb-1">
+    <p className="text-sm text-muted-foreground leading-relaxed">{children}</p>
     {right ? <div className="shrink-0">{right}</div> : null}
   </div>
 );
@@ -405,13 +403,12 @@ const Manual: React.FC = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-8">
-      <Tabs defaultValue="json" className="w-full">
-        {/* Underline tabs with softer weight and no header vibe */}
-        <TabsList className="relative flex w-full items-center gap-6 border-b border-border/60 bg-transparent p-0">
+    <div className="space-y-6">
+      <Tabs defaultValue="json" className="w-full space-y-5">
+        <TabsList className="relative flex w-full flex-wrap items-end gap-1 border-b border-border bg-transparent p-0 h-auto rounded-none">
           <TabsTrigger
             value="json"
-            className="h-10 rounded-none border-b border-transparent bg-transparent px-1 text-sm font-medium data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
+            className="h-10 rounded-none border-b-2 border-transparent bg-transparent px-3 text-sm font-medium data-[state=active]:border-[#2563eb] data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=inactive]:text-muted-foreground"
           >
             <span className="inline-flex items-center gap-2">
               <FileJson className="h-4 w-4" /> {t("manual.importFromJson")}
@@ -419,7 +416,7 @@ const Manual: React.FC = () => {
           </TabsTrigger>
           <TabsTrigger
             value="dxt"
-            className="h-10 rounded-none border-b border-transparent bg-transparent px-1 text-sm font-medium data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
+            className="h-10 rounded-none border-b-2 border-transparent bg-transparent px-3 text-sm font-medium data-[state=active]:border-[#2563eb] data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=inactive]:text-muted-foreground"
           >
             <span className="inline-flex items-center gap-2">
               <FileCode2 className="h-4 w-4" /> {t("manual.importFromDxt")}
@@ -427,7 +424,7 @@ const Manual: React.FC = () => {
           </TabsTrigger>
           <TabsTrigger
             value="local"
-            className="h-10 rounded-none border-b border-transparent bg-transparent px-1 text-sm font-medium data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
+            className="h-10 rounded-none border-b-2 border-transparent bg-transparent px-3 text-sm font-medium data-[state=active]:border-[#2563eb] data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=inactive]:text-muted-foreground"
           >
             <span className="inline-flex items-center gap-2">
               <HardDrive className="h-4 w-4" /> {t("manual.createManually")}
@@ -435,7 +432,7 @@ const Manual: React.FC = () => {
           </TabsTrigger>
           <TabsTrigger
             value="remote"
-            className="h-10 rounded-none border-b border-transparent bg-transparent px-1 text-sm font-medium data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
+            className="h-10 rounded-none border-b-2 border-transparent bg-transparent px-3 text-sm font-medium data-[state=active]:border-[#2563eb] data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=inactive]:text-muted-foreground"
           >
             <span className="inline-flex items-center gap-2">
               <Globe className="h-4 w-4" /> {t("manual.remote.name")}
@@ -444,7 +441,7 @@ const Manual: React.FC = () => {
         </TabsList>
 
         {/* JSON Import */}
-        <TabsContent value="json" className="space-y-4">
+        <TabsContent value="json" className="space-y-4 mt-0">
           <TabIntro
             right={
               importedServers ? (
@@ -462,9 +459,9 @@ const Manual: React.FC = () => {
             {t("importFromJson.description")}
           </TabIntro>
 
-          <div className="space-y-4">
+          <div className="space-y-4 rounded-lg border border-border bg-card p-4">
             {importedServers ? (
-              <ScrollArea className="h-60 rounded-md border bg-muted/30 p-3">
+              <ScrollArea className="h-60 rounded-md border bg-muted/20 p-3">
                 <pre className="text-xs text-muted-foreground font-mono whitespace-pre-wrap break-words">
                   {JSON.stringify(importedServers, null, 2)}
                 </pre>
@@ -477,19 +474,8 @@ const Manual: React.FC = () => {
                     setJsonInput(e.target.value);
                     setJsonError(null);
                   }}
-                  placeholder={`{
-  "mcpServers": {
-    "puppeteer": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-puppeteer"],
-      "env": {
-        "PUPPETEER_LAUNCH_OPTIONS": "{ \\"headless\\": false }",
-        "ALLOW_DANGEROUS": "true"
-      }
-    }
-  }
-}`}
-                  className="font-mono h-80 text-sm"
+                  placeholder=""
+                  className="font-mono h-72 text-sm resize-y border-border focus-visible:ring-[#2563eb]/35"
                 />
 
                 {jsonError && (
@@ -503,7 +489,7 @@ const Manual: React.FC = () => {
                 <Button
                   onClick={handleJsonImport}
                   disabled={isLoadingJson || !jsonInput.trim()}
-                  className="flex items-center justify-center gap-2 w-full"
+                  className="flex items-center justify-center gap-2 w-full h-11 bg-[#2563eb] hover:bg-[#1d4ed8] text-white border-0"
                 >
                   {isLoadingJson ? (
                     <>
@@ -523,11 +509,11 @@ const Manual: React.FC = () => {
         </TabsContent>
 
         {/* DXT Import */}
-        <TabsContent value="dxt" className="space-y-4">
+        <TabsContent value="dxt" className="space-y-4 mt-0">
           <TabIntro>{t("manual.dxt.description")}</TabIntro>
 
-          <div className="space-y-4">
-            <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+          <div className="space-y-4 rounded-lg border border-border bg-card p-4">
+            <div className="border border-dashed border-border rounded-lg p-8 text-center bg-muted/15">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -587,7 +573,7 @@ const Manual: React.FC = () => {
             <Button
               onClick={handleDxtImport}
               disabled={isLoadingDxt || !dxtFile}
-              className="flex items-center justify-center gap-2 w-full"
+              className="flex items-center justify-center gap-2 w-full h-11 bg-[#2563eb] hover:bg-[#1d4ed8] text-white border-0"
             >
               {isLoadingDxt ? (
                 <>
@@ -605,10 +591,10 @@ const Manual: React.FC = () => {
         </TabsContent>
 
         {/* Local */}
-        <TabsContent value="local" className="space-y-4">
+        <TabsContent value="local" className="space-y-4 mt-0">
           <TabIntro>{t("manual.description")}</TabIntro>
 
-          <div className="space-y-4">
+          <div className="space-y-4 rounded-lg border border-border bg-card p-4">
             <Row>
               <div className="flex items-center gap-2">
                 <Label htmlFor="serverName" className="text-right">
@@ -788,7 +774,7 @@ const Manual: React.FC = () => {
             <Button
               onClick={handleManualCreate}
               disabled={isLoadingManual}
-              className="flex items-center justify-center gap-2 mt-2 w-full"
+              className="flex items-center justify-center gap-2 mt-2 w-full h-11 bg-[#2563eb] hover:bg-[#1d4ed8] text-white border-0"
             >
               {isLoadingManual ? (
                 <>
@@ -806,10 +792,10 @@ const Manual: React.FC = () => {
         </TabsContent>
 
         {/* Remote */}
-        <TabsContent value="remote" className="space-y-4">
+        <TabsContent value="remote" className="space-y-4 mt-0">
           <TabIntro>{t("manual.remote.description")}</TabIntro>
 
-          <div className="space-y-4">
+          <div className="space-y-4 rounded-lg border border-border bg-card p-4">
             <Row>
               <div className="flex items-center gap-2">
                 <Label htmlFor="remote-server-name" className="text-right">
@@ -954,7 +940,7 @@ const Manual: React.FC = () => {
             <Button
               onClick={connectToRemoteServer}
               disabled={isLoadingRemote}
-              className="flex items-center justify-center gap-2 mt-2 w-full"
+              className="flex items-center justify-center gap-2 mt-2 w-full h-11 bg-[#2563eb] hover:bg-[#1d4ed8] text-white border-0"
             >
               {isLoadingRemote ? (
                 <>
