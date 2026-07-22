@@ -449,18 +449,21 @@ export class McpAppsManagerService extends SingletonService<
       return;
     }
 
-    // Replace existing mcp-router entry under mcp_servers if present
+    // Remove ALL existing mcp-router blocks (indented or not). A previous bug
+    // only matched unindented keys, so repeated Add MCP Config duplicated entries.
     const entryPattern =
-      /(^|\n)[ \t]*mcp-router:[ \t]*\n(?:[ \t]+.+\n)*/;
-    if (/^mcp_servers:\s*$/m.test(content) || /\nmcp_servers:\s*\n/.test(content)) {
-      if (/\nmcp-router:\s*\n/.test(content) || /^mcp-router:\s*\n/m.test(content)) {
-        content = content.replace(entryPattern, `\n${entry}`);
-      } else {
-        content = content.replace(
-          /(^|\n)mcp_servers:\s*\n/,
-          `$1mcp_servers:\n${entry}`,
-        );
-      }
+      /(^|\n)[ \t]*mcp-router:[ \t]*\n(?:[ \t]+.+\n)*/g;
+    content = content.replace(entryPattern, "$1");
+    content = content.replace(/\n{3,}/g, "\n\n");
+
+    if (
+      /^mcp_servers:\s*$/m.test(content) ||
+      /(^|\n)mcp_servers:\s*\n/.test(content)
+    ) {
+      content = content.replace(
+        /(^|\n)mcp_servers:\s*\n/,
+        `$1mcp_servers:\n${entry}`,
+      );
     } else {
       content = `${content.trimEnd()}\n\n${block}`;
     }

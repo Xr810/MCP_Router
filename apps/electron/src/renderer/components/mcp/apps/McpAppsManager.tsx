@@ -182,6 +182,9 @@ const McpAppsManager: React.FC = () => {
         setApps((prevApps) => [...prevApps, result.app!]);
         toast.success(result.message);
         setCustomAppName(""); // 入力欄をクリア
+        if (result.app.token) {
+          openHowToUseModal(result.app);
+        }
       } else {
         toast.error(result.message);
       }
@@ -202,6 +205,9 @@ const McpAppsManager: React.FC = () => {
           prevApps.map((app) => (app.name === appName ? result.app! : app)),
         );
         toast.success(result.message);
+        if (result.app.token) {
+          openHowToUseModal(result.app);
+        }
       } else {
         toast.error(result.message);
       }
@@ -251,9 +257,10 @@ const McpAppsManager: React.FC = () => {
   // Function to open HowToUse modal with the token from the selected app
   const openHowToUseModal = (app: McpApp) => {
     setSelectedApp(app);
-    if (howToUseRef.current) {
-      howToUseRef.current.showDialog();
-    }
+    // Wait for token prop to flush onto HowToUse before opening
+    queueMicrotask(() => {
+      howToUseRef.current?.showDialog();
+    });
   };
 
   // カスタムアプリ削除ダイアログを開く
@@ -405,7 +412,7 @@ const McpAppsManager: React.FC = () => {
                   <div>
                     {/* Add How To Use and Delete buttons to the left of the card footer */}
                     <div className="flex gap-2 flex-wrap">
-                      {app.configured && app.token && (
+                      {app.token && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -426,7 +433,7 @@ const McpAppsManager: React.FC = () => {
                     </div>
                   </div>
                   <div>
-                    {!app.configured ? (
+                    {!app.configured && !app.token ? (
                       <Button
                         onClick={() => handleAddConfig(app.name)}
                         variant="default"
@@ -437,6 +444,15 @@ const McpAppsManager: React.FC = () => {
                       </Button>
                     ) : (
                       <div className="flex gap-2 flex-wrap">
+                        {!app.configured && (
+                          <Button
+                            onClick={() => handleAddConfig(app.name)}
+                            variant="default"
+                            size="sm"
+                          >
+                            {t("mcpApps.addMcpConfig")}
+                          </Button>
+                        )}
                         {app.hasOtherServers && (
                           <Button
                             onClick={() => handleUnifyConfig(app.name)}
@@ -446,13 +462,15 @@ const McpAppsManager: React.FC = () => {
                             {t("mcpApps.unify")}
                           </Button>
                         )}
-                        <Button
-                          onClick={() => openAccessControlDialog(app)}
-                          variant="outline"
-                          size="sm"
-                        >
-                          {t("mcpApps.serverAccess")}
-                        </Button>
+                        {app.token && (
+                          <Button
+                            onClick={() => openAccessControlDialog(app)}
+                            variant="outline"
+                            size="sm"
+                          >
+                            {t("mcpApps.serverAccess")}
+                          </Button>
+                        )}
                       </div>
                     )}
                   </div>

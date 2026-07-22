@@ -95,6 +95,41 @@ function extractCodexTokenFromToml(tomlText: string): string | null {
 }
 
 /**
+ * Hermes ~/.hermes/config.yaml is YAML (mcp_servers), not JSON.
+ * Parse lightly without a YAML dependency so configured/token detection works.
+ */
+function extractHermesConfigInfo(yamlText: string): {
+  hasMcpConfig: boolean;
+  configToken: string;
+} {
+  const hasMcpServers = /(^|\n)mcp_servers:\s*(\n|$)/.test(yamlText);
+  const hasMcpRouter = /(^|\n)[ \t]*mcp-router:\s*(\n|$)/.test(yamlText);
+  const hasConnect = /(^|\n)[ \t]*args:[\s\S]*?\bconnect\b/.test(yamlText);
+  const hasCli =
+    /@mcp_router\/cli(?:@\S*)?/.test(yamlText) ||
+    /mcpr-cli(?:@\S*)?/.test(yamlText);
+  const hasNpx = /(^|\n)[ \t]*command:\s*["']?npx["']?/.test(yamlText);
+
+  const tokenMatch = yamlText.match(
+    /MCPR_TOKEN:\s*(?:"([^"]+)"|'([^']+)'|([^\s#]+))/,
+  );
+  const configToken = stripOuterQuotes(
+    tokenMatch?.[1] || tokenMatch?.[2] || tokenMatch?.[3] || "",
+  );
+
+  return {
+    hasMcpConfig: !!(
+      hasMcpServers &&
+      hasMcpRouter &&
+      hasNpx &&
+      hasConnect &&
+      hasCli
+    ),
+    configToken: typeof configToken === "string" ? configToken : "",
+  };
+}
+
+/**
  * Sync server configurations from a provided list of configs
  * Used by the mcp-apps-service to sync servers found in client config files
  */
@@ -270,14 +305,23 @@ export async function extractConfigInfo(
     const definition = findStandardAppDefinition(name);
     const configKind = definition?.configKind ?? "standard-json";
 
+    let hasMcpConfig;
+    let configToken = "";
+    let otherServers: MCPServerConfig[] = [];
+
+    if (configKind === "hermes-yaml") {
+      const hermes = extractHermesConfigInfo(fileContent);
+      return {
+        hasMcpConfig: hermes.hasMcpConfig,
+        configToken: hermes.configToken,
+        otherServers: [],
+      };
+    }
+
     const config =
       configKind === "codex"
         ? { mcpServers: parseCodexTomlServers(fileContent) }
         : JSON.parse(fileContent);
-
-    let hasMcpConfig;
-    let configToken = "";
-    let otherServers: MCPServerConfig[] = [];
 
     switch (configKind) {
       case "vscode-json": {
