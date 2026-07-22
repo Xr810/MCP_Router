@@ -136,6 +136,14 @@ export class AppPaths {
     return path.join(this.HOME, ".codex", "config.toml");
   }
 
+  /**
+   * Hermes Agent / NemoHermes config path
+   * All platforms: ~/.hermes/config.yaml
+   */
+  public hermesConfig(): string {
+    return path.join(this.HOME, ".hermes", "config.yaml");
+  }
+
   public async exists(filePath: string): Promise<boolean> {
     try {
       await fs.promises.access(filePath, fs.constants.F_OK);

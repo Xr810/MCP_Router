@@ -414,7 +414,8 @@ function extractServerConfigs(
       case "cline":
       case "windsurf":
       case "cursor":
-        // These clients use 'mcpServers' structure
+      case "hermes":
+        // These clients use 'mcpServers' structure (Hermes YAML is normalized upstream)
         if (content.mcpServers) {
           extractStandardServerConfigs(
             content.mcpServers,
@@ -435,6 +436,11 @@ function extractServerConfigs(
           );
         }
         break;
+      default: {
+        const _exhaustive: never = clientType;
+        void _exhaustive;
+        break;
+      }
     }
   } catch (error) {
     console.error(`Error extracting server configs from ${clientType}:`, error);

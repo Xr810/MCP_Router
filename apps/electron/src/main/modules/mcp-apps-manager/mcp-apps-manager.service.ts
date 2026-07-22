@@ -40,6 +40,7 @@ import windsurfIcon from "../../../../public/images/apps/windsurf.svg";
 import cursorIcon from "../../../../public/images/apps/cursor.svg";
 import vscodeIcon from "../../../../public/images/apps/vscode.svg";
 import openAiIcon from "../../../../public/images/apps/openai.svg";
+import hermesIcon from "../../../../public/images/apps/hermes.svg";
 
 // アイコンのマッピング
 const ICON_MAP: Record<string, string> = {
@@ -49,6 +50,7 @@ const ICON_MAP: Record<string, string> = {
   cursor: cursorIcon,
   vscode: vscodeIcon,
   openai: openAiIcon,
+  hermes: hermesIcon,
 };
 
 /**
@@ -394,6 +396,62 @@ export class McpAppsManagerService extends SingletonService<
   }
 
   /**
+   * Hermes Agent / NemoHermes YAML config update.
+   * Writes/merges mcp_servers.mcp-router under ~/.hermes/config.yaml
+   */
+  private async updateHermesConfigYaml(
+    filePath: string,
+    tokenId: string,
+  ): Promise<void> {
+    const dir = path.dirname(filePath);
+    await fsPromises.mkdir(dir, { recursive: true });
+
+    const block =
+      `mcp_servers:\n` +
+      `  mcp-router:\n` +
+      `    command: "npx"\n` +
+      `    args: ["-y", "@mcp_router/cli@latest", "connect"]\n` +
+      `    env:\n` +
+      `      MCPR_TOKEN: "${tokenId}"\n`;
+
+    let content = "";
+    try {
+      content = await fsPromises.readFile(filePath, "utf8");
+    } catch {
+      // no file yet
+    }
+
+    if (!content.trim()) {
+      await fsPromises.writeFile(filePath, block, "utf8");
+      return;
+    }
+
+    // Replace existing mcp-router entry under mcp_servers if present
+    const entryPattern =
+      /(^|\n)[ \t]*mcp-router:[ \t]*\n(?:[ \t]+.+\n)*/;
+    if (/^mcp_servers:\s*$/m.test(content) || /\nmcp_servers:\s*\n/.test(content)) {
+      if (/\nmcp-router:\s*\n/.test(content) || /^mcp-router:\s*\n/m.test(content)) {
+        content = content.replace(
+          entryPattern,
+          `\n  mcp-router:\n    command: "npx"\n    args: ["-y", "@mcp_router/cli@latest", "connect"]\n    env:\n      MCPR_TOKEN: "${tokenId}"\n`,
+        );
+      } else {
+        content = content.replace(
+          /(^|\n)mcp_servers:\s*\n/,
+          `$1mcp_servers:\n  mcp-router:\n    command: "npx"\n    args: ["-y", "@mcp_router/cli@latest", "connect"]\n    env:\n      MCPR_TOKEN: "${tokenId}"\n`,
+        );
+      }
+    } else {
+      content = `${content.trimEnd()}\n\n${block}`;
+    }
+
+    if (!content.endsWith("\n")) {
+      content += "\n";
+    }
+    await fsPromises.writeFile(filePath, content, "utf8");
+  }
+
+  /**
    * アプリ用の設定を更新
    */
   private async updateAppConfig(
@@ -411,6 +469,13 @@ export class McpAppsManagerService extends SingletonService<
       await this.updateCodexConfigToml(configPath, tokenId);
       return;
     }
+
+    // Hermes Agent / NemoHermes uses YAML under ~/.hermes/config.yaml
+    if (definition.configKind === "hermes-yaml") {
+      await this.updateHermesConfigYaml(configPath, tokenId);
+      return;
+    }
+
     // アプリがインストールされているか確認
     const installed = await this.exists(configPath);
     if (!installed) {

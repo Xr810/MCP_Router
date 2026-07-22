@@ -28,9 +28,10 @@ export function TitleBar() {
       {/* 左側のスペース（macOSのトラフィックライト用） */}
       <div className={platform === "darwin" ? "w-20" : "w-4"} />
 
-      {/* 中央：アプリタイトル */}
-      <div className="flex-1 text-center text-sm font-medium text-muted-foreground select-none">
-        MCP Router
+      {/* 中央：アプリタイトル — MCP Router brand */}
+      <div className="flex-1 text-center text-sm font-medium select-none">
+        <span className="text-foreground font-semibold">MCP Router</span>
+        <span className="text-muted-foreground"> · MCP Router</span>
       </div>
 
       {/* 右側：ワークスペーススイッチャー */}
