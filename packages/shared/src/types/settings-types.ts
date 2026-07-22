@@ -113,7 +113,8 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   analyticsEnabled: true,
   autoUpdateEnabled: true,
   showWindowOnStartup: true,
-  theme: "system",
+  // corporate site is light-first; default the product to light
+  theme: "light",
   cloudSync: {
     enabled: false,
   },

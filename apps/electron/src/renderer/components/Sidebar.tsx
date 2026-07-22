@@ -12,8 +12,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { useWorkspaceStore } from "@/renderer/stores";
 import { usePlatformAPI } from "@/renderer/platform-api";
-// @ts-expect-error: Webpack file-loader provides typing for image assets at runtime
-import iconImage from "../../../public/images/icon/icon.png";
+import { JeLogo } from "@/renderer/components/brand/JeLogo";
 import {
   Sidebar,
   SidebarContent,
@@ -70,13 +69,13 @@ const SidebarComponent: React.FC = () => {
       <div className="pt-[50px]" />
       <SidebarHeader>
         <Link
-          to="/apps/electron/public"
-          className="flex items-center no-underline px-2 py-1"
+          to="/servers"
+          className="flex flex-col gap-1 no-underline px-2 py-2 hover:opacity-90"
         >
-          <img src={iconImage} className="w-8 h-8 mr-3" alt="Logo" />
-          <h1 className="text-xl font-bold tracking-tight">
-            {t("home.title")}
-          </h1>
+          <JeLogo className="h-8 w-auto max-w-[168px]" />
+          <span className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+            MCP Router
+          </span>
         </Link>
       </SidebarHeader>
 

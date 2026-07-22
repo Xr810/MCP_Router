@@ -1,22 +1,4 @@
-const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
-
-// Enable type checking in both development and production
-export const plugins = [
-  new ForkTsCheckerWebpackPlugin({
-    logger: "webpack-infrastructure",
-    typescript: {
-      configFile: "./tsconfig.json",
-      build: true, // Enable incremental compilation
-    },
-    issue: {
-      // Make TypeScript errors block the build
-      include: [
-        { file: "**/*.{ts,tsx}" },
-      ],
-      exclude: [
-        { file: "**/node_modules/**/*" },
-      ],
-    },
-    async: false, // Run type checking synchronously to block builds on errors
-  }),
-];
+// ForkTsCheckerWebpackPlugin is disabled: minimatch CJS/ESM interop
+// (minimatch_1.default is not a function) breaks electron-forge start on this
+// toolchain. Use `pnpm --filter @mcp_router/electron typecheck` instead.
+export const plugins: unknown[] = [];

@@ -10,7 +10,7 @@ export const createThemeStore = (
   getPlatformAPI: () => PlatformAPI,
 ): UseBoundStore<StoreApi<ThemeStoreState>> =>
   create<ThemeStoreState>((set) => ({
-    theme: "system",
+    theme: "light",
     setTheme: (theme: Theme) => {
       set({ theme });
 
@@ -70,7 +70,7 @@ export function initializeThemeStore(
   try {
     const platformAPI = getPlatformAPI();
     platformAPI.settings.get().then((settings) => {
-      const initialTheme: Theme = settings.theme ?? "system";
+      const initialTheme: Theme = settings.theme ?? "light";
       // Update store state and apply theme without persisting again
       useThemeStore.setState({ theme: initialTheme });
       applyTheme(initialTheme);

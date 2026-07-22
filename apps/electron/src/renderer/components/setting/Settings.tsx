@@ -13,7 +13,6 @@ import { Switch } from "@mcp_router/ui";
 import { Input } from "@mcp_router/ui";
 import { Textarea } from "@mcp_router/ui";
 import { toast } from "sonner";
-import { useThemeStore } from "@/renderer/stores";
 import { useAuthStore } from "../../stores";
 import {
   IconBrandDiscord,
@@ -24,6 +23,7 @@ import {
 import { electronPlatformAPI as platformAPI } from "../../platform-api/electron-platform-api";
 import { postHogService } from "../../services/posthog-service";
 import type { CloudSyncStatus } from "@mcp_router/shared";
+import { ThemeToggle } from "@/renderer/components/ThemeToggle";
 
 const Settings: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -53,7 +53,6 @@ const Settings: React.FC = () => {
   const [isSendingFeedback, setIsSendingFeedback] = useState(false);
 
   // Zustand stores
-  const { theme, setTheme } = useThemeStore();
   const {
     isAuthenticated,
     userInfo,
@@ -612,33 +611,8 @@ const Settings: React.FC = () => {
             </Select>
           </div>
 
-          {/* Theme */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <label className="text-sm font-medium">
-                {t("settings.theme")}
-              </label>
-            </div>
-            <Select
-              value={theme}
-              onValueChange={(value: "light" | "dark" | "system") =>
-                setTheme(value)
-              }
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder={t("settings.theme")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="light">
-                  {t("settings.themeLight")}
-                </SelectItem>
-                <SelectItem value="dark">{t("settings.themeDark")}</SelectItem>
-                <SelectItem value="system">
-                  {t("settings.themeSystem")}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Theme — toggleable light / dark / system */}
+          <ThemeToggle variant="switch-row" />
 
           {/* Auto Update */}
           <div className="flex items-center justify-between">

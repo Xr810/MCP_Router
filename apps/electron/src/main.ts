@@ -336,10 +336,13 @@ function initUI({
 async function initApplication(): Promise<void> {
   // 環境設定を初期化
   initializeEnvironment();
+  // Allow Roboto from Google Fonts (same as example.com)
   const DEV_CSP = `
     default-src 'self' 'unsafe-inline' http://localhost:* ws://localhost:*;
     script-src 'self' 'unsafe-eval' 'unsafe-inline';
-    connect-src 'self' http://localhost:* ws://localhost:* https://mcp-router.net https://staging.mcp-router.net https://us.i.posthog.com https://us-assets.i.posthog.com;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    font-src 'self' data: https://fonts.gstatic.com;
+    connect-src 'self' http://localhost:* ws://localhost:* https://mcp-router.net https://staging.mcp-router.net https://us.i.posthog.com https://us-assets.i.posthog.com https://fonts.googleapis.com https://fonts.gstatic.com;
     img-src 'self' data:;
   `
     .replace(/\s+/g, " ")

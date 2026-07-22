@@ -263,13 +263,27 @@ const Home: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="mb-4 flex items-center gap-2">
+    <div className="flex flex-col h-full gap-5">
+      {/* Page header — title left, primary Add action right (reference UI) */}
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-2xl font-semibold tracking-tight text-muted-foreground">
+          {t("serverList.title")}
+        </h1>
+        <Button asChild variant="outline" className="gap-2 shrink-0">
+          <Link to="/servers/add">
+            <IconPlus className="h-4 w-4" />
+            {t("serverList.addServer")}
+          </Link>
+        </Button>
+      </div>
+
+      {/* Secondary toolbar — filters / search / view (not cramped with Add) */}
+      <div className="flex flex-wrap items-center gap-2">
         <Button
           variant="outline"
           size="sm"
           onClick={() => setIsHomeSettingsOpen(true)}
-          className="gap-1"
+          className="gap-1 h-9"
           title={t("projects.projectSettings", {
             defaultValue: "Project Settings",
           })}
@@ -283,7 +297,7 @@ const Home: React.FC = () => {
               setSelectedProjectId(value === "__all__" ? null : value)
             }
           >
-            <SelectTrigger className="h-8">
+            <SelectTrigger className="h-9">
               <SelectValue
                 placeholder={t("projects.all", { defaultValue: "All" })}
               />
@@ -303,22 +317,22 @@ const Home: React.FC = () => {
             </SelectContent>
           </Select>
         </div>
-        <div className="relative flex-1">
+        <div className="relative flex-1 min-w-[12rem]">
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t("common.search")}
-            className="w-full bg-background border border-border rounded-md py-1.5 px-3 pl-8 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full bg-background border border-border rounded-md h-9 px-3 pl-9 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
           />
-          <IconSearch className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <IconSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         </div>
         <div className="flex gap-1">
           <Button
             variant={serverViewMode === "list" ? "default" : "outline"}
             size="sm"
             onClick={() => setServerViewMode("list")}
-            className="h-8 w-8 p-0"
+            className="h-9 w-9 p-0"
             title="List View"
           >
             <List className="h-4 w-4" />
@@ -327,7 +341,7 @@ const Home: React.FC = () => {
             variant={serverViewMode === "grid" ? "default" : "outline"}
             size="sm"
             onClick={() => setServerViewMode("grid")}
-            className="h-8 w-8 p-0"
+            className="h-9 w-9 p-0"
             title="Grid View"
           >
             <Grid3X3 className="h-4 w-4" />
@@ -337,15 +351,10 @@ const Home: React.FC = () => {
           variant="outline"
           size="sm"
           onClick={exportServersToFile}
-          className="gap-1"
+          className="gap-1 h-9"
           title="Export"
         >
           <IconUpload className="h-4 w-4" />
-        </Button>
-        <Button asChild variant="outline" size="sm" className="gap-1">
-          <Link to="/servers/add">
-            <IconPlus className="h-4 w-4" />
-          </Link>
         </Button>
       </div>
 
@@ -356,15 +365,18 @@ const Home: React.FC = () => {
         )}
       >
         {filteredServers.length === 0 && searchQuery === "" ? (
-          <div className="p-4 flex items-center justify-center">
-            <div className="text-center">
+          <div className="p-12 flex items-center justify-center">
+            <div className="text-center max-w-sm">
               <IconServer className="w-16 h-16 mx-auto mb-4 opacity-40" />
               <div className="text-base font-medium mb-2">
                 {t("serverList.noServers")}
               </div>
-              <div className="text-sm opacity-75">
-                <Link to="/servers/add">{t("serverList.addServer")}</Link>
-              </div>
+              <Button asChild variant="outline" className="mt-3 gap-2">
+                <Link to="/servers/add">
+                  <IconPlus className="h-4 w-4" />
+                  {t("serverList.addServer")}
+                </Link>
+              </Button>
             </div>
           </div>
         ) : filteredServers.length === 0 && searchQuery !== "" ? (
