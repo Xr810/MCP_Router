@@ -310,10 +310,12 @@ export class MCPHttpServer {
         // Append metadata for downstream handlers
         const token = req.headers["authorization"];
         this.attachRequestMetadata(modifiedBody, token, projectFilter);
-        // For local workspaces, use local aggregator
-        await this.aggregatorServer
-          .getTransport()
-          .handleRequest(req, res, modifiedBody);
+        // Per-session Streamable HTTP (SDK 1.26+ cannot reuse one stateless transport)
+        await this.aggregatorServer.handleStreamableHttpRequest(
+          req,
+          res,
+          modifiedBody,
+        );
       } catch (error) {
         console.error("Error handling MCP request:", error);
         if (!res.headersSent) {
@@ -321,9 +323,12 @@ export class MCPHttpServer {
             jsonrpc: "2.0",
             error: {
               code: -32603,
-              message: "Internal server error",
+              message:
+                error instanceof Error
+                  ? error.message
+                  : "Internal server error",
             },
-            id: null,
+            id: modifiedBody?.id ?? null,
           });
         }
       }
@@ -382,17 +387,11 @@ export class MCPHttpServer {
         });
 
         if (platformManager.isRemoteWorkspace()) {
-          // For remote workspaces, we need to connect to remote aggregator
-          // Note: This requires implementing a remote aggregator SSE endpoint
-          // For now, we'll use the local aggregator but log a warning
           console.warn(
             "Remote aggregator SSE not yet implemented, using local aggregator",
           );
-          await this.aggregatorServer.getAggregatorServer().connect(transport);
-        } else {
-          // For local workspaces, connect to local aggregator server
-          await this.aggregatorServer.getAggregatorServer().connect(transport);
         }
+        await this.aggregatorServer.connectSseTransport(transport);
 
         // セッションID情報をクライアントに送信
         res.write(`data: ${JSON.stringify({ sessionId })}\n\n`);
