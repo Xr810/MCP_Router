@@ -253,15 +253,20 @@ export class MCPHttpServer {
     tokenHeader: string | string[] | undefined,
     projectId: string | null,
   ): void {
-    const tokenValue = Array.isArray(tokenHeader)
-      ? tokenHeader[0]
-      : tokenHeader;
+    const raw = Array.isArray(tokenHeader) ? tokenHeader[0] : tokenHeader;
+    const tokenValue =
+      typeof raw === "string"
+        ? raw.replace(/^Bearer\s+/i, "").trim()
+        : raw;
 
     if (payload.params && typeof payload.params === "object") {
-      payload.params._meta = {
-        ...(payload.params._meta || {}),
-        token: tokenValue,
-        projectId,
+      payload.params = {
+        ...payload.params,
+        _meta: {
+          ...(payload.params._meta || {}),
+          token: tokenValue,
+          projectId,
+        },
       };
     } else if (payload.params === undefined) {
       payload.params = {
@@ -279,8 +284,17 @@ export class MCPHttpServer {
   private configureMcpRoute(): void {
     // POST /mcp - Handle MCP requests (direct route without versioning)
     this.app.post("/mcp", async (req, res) => {
-      // オリジナルのリクエストボディをコピー
-      const modifiedBody = { ...req.body };
+      // Deep-ish copy so we never mutate Express's req.body in place
+      const modifiedBody =
+        req.body && typeof req.body === "object"
+          ? {
+              ...req.body,
+              params:
+                req.body.params && typeof req.body.params === "object"
+                  ? { ...req.body.params }
+                  : req.body.params,
+            }
+          : req.body;
 
       try {
         const platformManager = getPlatformAPIManager();

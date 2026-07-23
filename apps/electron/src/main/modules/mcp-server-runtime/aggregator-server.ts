@@ -43,6 +43,9 @@ export class AggregatorServer {
 
   /**
    * Handle one Streamable HTTP MCP request (initialize or follow-up).
+   *
+   * Matches the MCP SDK Express session pattern: one Server+Transport per
+   * session, JSON responses, never reuse a transport across sessions.
    */
   public async handleStreamableHttpRequest(
     req: IncomingMessage,
@@ -57,49 +60,78 @@ export class AggregatorServer {
           ? sessionHeader[0]
           : undefined;
 
-    if (sessionId) {
-      const existing = this.httpSessions.get(sessionId);
-      if (!existing) {
-        if (!res.headersSent) {
-          res.statusCode = 404;
-          res.setHeader("Content-Type", "application/json");
-          res.end(
-            JSON.stringify({
-              jsonrpc: "2.0",
-              error: {
-                code: -32001,
-                message: "Session not found",
-              },
-              id: null,
-            }),
-          );
-        }
-        return;
-      }
+    if (sessionId && this.httpSessions.has(sessionId)) {
+      const existing = this.httpSessions.get(sessionId)!;
       await existing.transport.handleRequest(req, res, parsedBody);
       return;
     }
 
-    // New session (typically initialize) — fresh Server + Transport per session
+    if (sessionId && !this.httpSessions.has(sessionId)) {
+      if (!res.headersSent) {
+        res.statusCode = 404;
+        res.setHeader("Content-Type", "application/json");
+        res.end(
+          JSON.stringify({
+            jsonrpc: "2.0",
+            error: { code: -32001, message: "Session not found" },
+            id: null,
+          }),
+        );
+      }
+      return;
+    }
+
+    // No session header — only initialize may start a new session
+    const isInit =
+      parsedBody !== null &&
+      typeof parsedBody === "object" &&
+      !Array.isArray(parsedBody) &&
+      (parsedBody as { method?: string }).method === "initialize";
+
+    if (!isInit) {
+      if (!res.headersSent) {
+        res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
+        res.end(
+          JSON.stringify({
+            jsonrpc: "2.0",
+            error: {
+              code: -32000,
+              message:
+                "Bad Request: Mcp-Session-Id required (or send initialize first)",
+            },
+            id: (parsedBody as { id?: unknown })?.id ?? null,
+          }),
+        );
+      }
+      return;
+    }
+
     const server = this.createServer();
     this.wireHandlers(server);
 
-    let assignedSessionId: string | undefined;
-    const transport = new StreamableHTTPServerTransport({
-      sessionIdGenerator: () => {
-        assignedSessionId = randomUUID();
-        return assignedSessionId;
-      },
-      onsessioninitialized: async (id) => {
+    let transport: StreamableHTTPServerTransport;
+    transport = new StreamableHTTPServerTransport({
+      sessionIdGenerator: () => randomUUID(),
+      enableJsonResponse: true,
+      onsessioninitialized: (id) => {
         this.httpSessions.set(id, { server, transport });
+      },
+      onsessionclosed: (id) => {
+        this.httpSessions.delete(id);
       },
     });
 
     transport.onclose = () => {
-      if (assignedSessionId) {
-        this.httpSessions.delete(assignedSessionId);
+      const id = transport.sessionId;
+      if (id) {
+        this.httpSessions.delete(id);
       }
       void server.close().catch(() => undefined);
+    };
+
+    transport.onerror = (error) => {
+      console.error("[MCP StreamableHTTP transport error]", error);
     };
 
     await server.connect(transport);
