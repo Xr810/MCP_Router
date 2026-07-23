@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import * as http from "http";
 import { MCPServerManager } from "../../mcp-server-manager/mcp-server-manager";
-import { AggregatorServer } from "../aggregator-server";
+import { AggregatorServer, MCP_HTTP_BUILD } from "../aggregator-server";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse";
 import { getPlatformAPIManager } from "../../workspace/platform-api-manager";
 import { TokenValidator } from "../token-validator";
@@ -184,6 +184,8 @@ export class MCPHttpServer {
         service: "mcp-router",
         host: this.host,
         port: this.port,
+        mcpHttpBuild: MCP_HTTP_BUILD,
+        streamableSessions: this.aggregatorServer.getHttpSessionCount(),
       });
     });
 
@@ -197,7 +199,10 @@ export class MCPHttpServer {
         service: "mcp-router",
         host: this.host,
         port: this.port,
+        mcpHttpBuild: MCP_HTTP_BUILD,
         sessions: this.sseSessions.size,
+        streamableSessions: this.aggregatorServer.getHttpSessionCount(),
+        lastHttpError: this.aggregatorServer.getLastHttpError(),
       });
     });
   }
@@ -253,6 +258,15 @@ export class MCPHttpServer {
     tokenHeader: string | string[] | undefined,
     projectId: string | null,
   ): void {
+    // Do not mutate initialize — Hermes/SDK are strict about params shape.
+    if (
+      !payload ||
+      typeof payload !== "object" ||
+      payload.method === "initialize"
+    ) {
+      return;
+    }
+
     const raw = Array.isArray(tokenHeader) ? tokenHeader[0] : tokenHeader;
     const tokenValue =
       typeof raw === "string"
@@ -315,13 +329,13 @@ export class MCPHttpServer {
                     ? error.message
                     : "Invalid project header",
               },
-              id: modifiedBody.id || null,
+              id: modifiedBody?.id || null,
             });
           }
           return;
         }
 
-        // Append metadata for downstream handlers
+        // Append metadata for downstream handlers (skipped for initialize)
         const token = req.headers["authorization"];
         this.attachRequestMetadata(modifiedBody, token, projectFilter);
         // Per-session Streamable HTTP (SDK 1.26+ cannot reuse one stateless transport)
@@ -343,6 +357,50 @@ export class MCPHttpServer {
                   : "Internal server error",
             },
             id: modifiedBody?.id ?? null,
+          });
+        }
+      }
+    });
+
+    // GET /mcp — SSE stream for an existing session (required by Streamable HTTP clients)
+    this.app.get("/mcp", async (req, res) => {
+      try {
+        await this.aggregatorServer.handleStreamableHttpGet(req, res);
+      } catch (error) {
+        console.error("Error handling MCP GET:", error);
+        if (!res.headersSent) {
+          res.status(500).json({
+            jsonrpc: "2.0",
+            error: {
+              code: -32603,
+              message:
+                error instanceof Error
+                  ? error.message
+                  : "Internal server error",
+            },
+            id: null,
+          });
+        }
+      }
+    });
+
+    // DELETE /mcp — session termination
+    this.app.delete("/mcp", async (req, res) => {
+      try {
+        await this.aggregatorServer.handleStreamableHttpDelete(req, res);
+      } catch (error) {
+        console.error("Error handling MCP DELETE:", error);
+        if (!res.headersSent) {
+          res.status(500).json({
+            jsonrpc: "2.0",
+            error: {
+              code: -32603,
+              message:
+                error instanceof Error
+                  ? error.message
+                  : "Internal server error",
+            },
+            id: null,
           });
         }
       }
