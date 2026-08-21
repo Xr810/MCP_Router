@@ -56,10 +56,13 @@ describe("TokenManager", () => {
       },
       deleteToken: (id) => tokens.delete(id),
       listTokens: () => Array.from(tokens.values()),
-      updateTokenServerAccess: (id, serverAccess) => {
+      updateTokenServerAccess: (id, serverAccess, toolAccess) => {
         const token = tokens.get(id);
         if (!token) return false;
         token.serverAccess = serverAccess || {};
+        if (toolAccess !== undefined) {
+          token.toolAccess = toolAccess;
+        }
         return true;
       },
     });
@@ -116,5 +119,44 @@ describe("TokenManager", () => {
     assert.match(token.id, /^mcpr_[A-Za-z0-9_-]+$/);
     assert.equal(typeof token.expiresAt, "number");
     assert.ok(token.expiresAt >= before + 30 * 24 * 60 * 60);
+    assert.deepEqual(token.toolAccess, {});
+  });
+
+  it("denies tools on new keys until an admin grants them", () => {
+    const token = new TokenManager().generateToken({
+      clientId: "alice",
+      serverAccess: { excel: true },
+    });
+
+    const manager = new TokenManager();
+    assert.equal(manager.hasServerAccess(token.id, "excel"), true);
+    assert.equal(manager.hasToolAccess(token.id, "excel", "read"), false);
+
+    manager.updateTokenServerAccess(
+      token.id,
+      { excel: true },
+      { excel: { read: true } },
+    );
+    assert.equal(manager.hasToolAccess(token.id, "excel", "read"), true);
+    assert.equal(manager.hasToolAccess(token.id, "excel", "write"), false);
+  });
+
+  it("keeps legacy tokens without toolAccess able to call tools on granted servers", () => {
+    tokens.set("mcpr_legacy_tools", {
+      id: "mcpr_legacy_tools",
+      clientId: "hermes",
+      issuedAt: Math.floor(Date.now() / 1000),
+      serverAccess: { excel: true },
+    });
+
+    const manager = new TokenManager();
+    assert.equal(
+      manager.hasToolAccess("mcpr_legacy_tools", "excel", "read"),
+      true,
+    );
+    assert.equal(
+      manager.hasToolAccess("mcpr_legacy_tools", "ppt", "read"),
+      false,
+    );
   });
 });

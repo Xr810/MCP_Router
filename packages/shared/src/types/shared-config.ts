@@ -4,7 +4,7 @@
  */
 
 import { AppSettings } from "./settings-types";
-import { Token, TokenServerAccess } from "./token-types";
+import { Token, TokenServerAccess, TokenToolAccess } from "./token-types";
 
 /**
  * 共通設定ファイルの構造
@@ -72,6 +72,7 @@ export interface ISharedConfigManager {
   updateTokenServerAccess(
     tokenId: string,
     serverAccess: TokenServerAccess,
+    toolAccess?: TokenToolAccess,
   ): void;
 
   /**

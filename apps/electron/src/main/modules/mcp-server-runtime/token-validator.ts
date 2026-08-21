@@ -1,6 +1,6 @@
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 import { TokenManager } from "@/main/modules/mcp-apps-manager/token-manager";
-import { TokenServerAccess } from "@mcp_router/shared";
+import { TokenServerAccess, TokenToolAccess } from "@mcp_router/shared";
 
 export class TokenValidator {
   private tokenManager: TokenManager;
@@ -68,6 +68,14 @@ export class TokenValidator {
     return this.tokenManager.hasServerAccess(token, serverId);
   }
 
+  public hasToolAccess(
+    token: string,
+    serverId: string,
+    toolName: string,
+  ): boolean {
+    return this.tokenManager.hasToolAccess(token, serverId, toolName);
+  }
+
   /**
    * Validate a token
    */
@@ -81,8 +89,13 @@ export class TokenValidator {
   public updateTokenServerAccess(
     tokenId: string,
     serverAccess: TokenServerAccess,
+    toolAccess?: TokenToolAccess,
   ): void {
-    this.tokenManager.updateTokenServerAccess(tokenId, serverAccess);
+    this.tokenManager.updateTokenServerAccess(
+      tokenId,
+      serverAccess,
+      toolAccess,
+    );
   }
 
   /**

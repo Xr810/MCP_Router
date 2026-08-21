@@ -19,6 +19,7 @@ import {
   MCPConnectionResult,
   MCPInputParam,
   TokenServerAccess,
+  TokenToolAccess,
 } from "@mcp_router/shared";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 
@@ -31,7 +32,10 @@ import {
   findStandardAppDefinition,
   getStandardAppIds,
 } from "./app-definitions";
-import { resolveMcpGatewayPublicUrl, resolveMcpHttpBind } from "@/main/modules/mcp-server-runtime/http/mcp-http-bind";
+import {
+  resolveMcpGatewayPublicUrl,
+  resolveMcpHttpBind,
+} from "@/main/modules/mcp-server-runtime/http/mcp-http-bind";
 import { getSettingsService } from "@/main/modules/settings/settings.service";
 import os from "os";
 
@@ -172,9 +176,14 @@ export class McpAppsManagerService extends SingletonService<
   public updateTokenServerAccess(
     tokenId: string,
     serverAccess: TokenServerAccess,
+    toolAccess?: TokenToolAccess,
   ): boolean {
     try {
-      return this.tokenManager.updateTokenServerAccess(tokenId, serverAccess);
+      return this.tokenManager.updateTokenServerAccess(
+        tokenId,
+        serverAccess,
+        toolAccess,
+      );
     } catch (error) {
       return this.handleError("サーバアクセス権限更新", error, false);
     }
@@ -446,8 +455,7 @@ export class McpAppsManagerService extends SingletonService<
 
     // Remove ALL existing mcp-router blocks (indented or not). A previous bug
     // only matched unindented keys, so repeated Add MCP Config duplicated entries.
-    const entryPattern =
-      /(^|\n)[ \t]*mcp-router:[ \t]*\n(?:[ \t]+.+\n)*/g;
+    const entryPattern = /(^|\n)[ \t]*mcp-router:[ \t]*\n(?:[ \t]+.+\n)*/g;
     content = content.replace(entryPattern, "$1");
     content = content.replace(/\n{3,}/g, "\n\n");
 
@@ -541,6 +549,7 @@ export class McpAppsManagerService extends SingletonService<
             configured: true,
             token: token.id,
             serverAccess: token.serverAccess,
+            toolAccess: token.toolAccess,
             isCustom: true,
             icon: undefined,
           };
@@ -557,7 +566,11 @@ export class McpAppsManagerService extends SingletonService<
    */
   private async getAppInfo(
     appName: string,
-    token: { id: string; serverAccess: TokenServerAccess },
+    token: {
+      id: string;
+      serverAccess: TokenServerAccess;
+      toolAccess?: TokenToolAccess;
+    },
     isStdApp: boolean,
   ): Promise<McpApp> {
     if (isStdApp) {
@@ -568,7 +581,13 @@ export class McpAppsManagerService extends SingletonService<
       await this.updateAppConfig(appName, configPath, token.id);
 
       // アプリの状態をチェック
-      return this.checkApp(appName, configPath, token.id, token.serverAccess);
+      return this.checkApp(
+        appName,
+        configPath,
+        token.id,
+        token.serverAccess,
+        token.toolAccess,
+      );
     } else {
       // カスタムアプリの処理
 
@@ -579,6 +598,7 @@ export class McpAppsManagerService extends SingletonService<
         configured: true,
         token: token.id,
         serverAccess: token.serverAccess,
+        toolAccess: token.toolAccess,
         isCustom: true,
         icon: undefined,
       };
@@ -593,6 +613,7 @@ export class McpAppsManagerService extends SingletonService<
     configPath: string,
     knownToken?: string,
     knownServerAccess?: TokenServerAccess,
+    knownToolAccess?: TokenToolAccess,
   ): Promise<McpApp> {
     try {
       // トークン関連情報の取得
@@ -607,6 +628,7 @@ export class McpAppsManagerService extends SingletonService<
       let configured = false;
       let token: string = knownToken || "";
       let serverAccess: TokenServerAccess | undefined = knownServerAccess;
+      let toolAccess: TokenToolAccess | undefined = knownToolAccess;
       let isCustom = false;
       let hasOtherServers = false;
 
@@ -614,6 +636,7 @@ export class McpAppsManagerService extends SingletonService<
       if (!token && appTokens.length > 0) {
         token = appTokens[0].id;
         serverAccess = appTokens[0].serverAccess;
+        toolAccess = appTokens[0].toolAccess;
       }
 
       // トークンの有効性チェックと設定状態の判定
@@ -658,6 +681,9 @@ export class McpAppsManagerService extends SingletonService<
           if (!serverAccess) {
             serverAccess = tokenObj.serverAccess;
           }
+          if (toolAccess === undefined) {
+            toolAccess = tokenObj.toolAccess;
+          }
         }
       }
 
@@ -668,6 +694,7 @@ export class McpAppsManagerService extends SingletonService<
         configured,
         token,
         serverAccess,
+        toolAccess,
         isCustom,
         hasOtherServers,
         icon: this.getStandardAppIcon(name),
@@ -736,23 +763,28 @@ export class McpAppsManagerService extends SingletonService<
         }
       }
 
-      // トークンを生成
+      // トークンを生成（新規キーはサーバもツールもデフォルト拒否）
       const serverService = getServerService();
       const servers = serverService.getAllServers();
       const serverAccess: TokenServerAccess = {};
       servers.forEach((server: { id: string }) => {
-        serverAccess[server.id] = true;
+        serverAccess[server.id] = false;
       });
 
       const token = this.generateToken({
         clientId: `${name.toLowerCase()}`,
         serverAccess,
+        toolAccess: {},
       });
 
       // アプリ情報を取得
       const app = await this.getAppInfo(
         name,
-        { id: token.id, serverAccess: token.serverAccess },
+        {
+          id: token.id,
+          serverAccess: token.serverAccess,
+          toolAccess: token.toolAccess,
+        },
         isStdApp,
       );
 
@@ -775,6 +807,7 @@ export class McpAppsManagerService extends SingletonService<
   public async updateAppServerAccess(
     appName: string,
     serverAccess: TokenServerAccess,
+    toolAccess?: TokenToolAccess,
   ): Promise<McpAppsManagerResult> {
     try {
       const incomingAccess = serverAccess || {};
@@ -794,7 +827,11 @@ export class McpAppsManagerService extends SingletonService<
       }
 
       // トークンのサーバアクセス権限を更新
-      const success = this.updateTokenServerAccess(appToken.id, incomingAccess);
+      const success = this.updateTokenServerAccess(
+        appToken.id,
+        incomingAccess,
+        toolAccess,
+      );
 
       if (!success) {
         return {
@@ -812,10 +849,12 @@ export class McpAppsManagerService extends SingletonService<
         ({
           ...appToken,
           serverAccess: incomingAccess,
+          toolAccess: toolAccess ?? appToken.toolAccess,
         } as Token);
       const tokenInfo = {
         id: refreshedToken.id,
         serverAccess: refreshedToken.serverAccess,
+        toolAccess: refreshedToken.toolAccess,
       };
       const app = await this.getAppInfo(appName, tokenInfo, isStdApp);
 
@@ -952,8 +991,13 @@ export async function addApp(name: string): Promise<McpAppsManagerResult> {
 export async function updateAppServerAccess(
   appName: string,
   serverAccess: TokenServerAccess,
+  toolAccess?: TokenToolAccess,
 ): Promise<McpAppsManagerResult> {
-  return getMcpAppsService().updateAppServerAccess(appName, serverAccess);
+  return getMcpAppsService().updateAppServerAccess(
+    appName,
+    serverAccess,
+    toolAccess,
+  );
 }
 
 export async function deleteCustomApp(appName: string): Promise<boolean> {

@@ -6,7 +6,7 @@ import {
   unifyAppConfig,
   deleteCustomApp,
 } from "./mcp-apps-manager.service";
-import type { TokenServerAccess } from "@mcp_router/shared";
+import type { TokenServerAccess, TokenToolAccess } from "@mcp_router/shared";
 
 export function setupMcpAppsHandlers(): void {
   ipcMain.handle("mcp-apps:list", async () => {
@@ -41,9 +41,14 @@ export function setupMcpAppsHandlers(): void {
 
   ipcMain.handle(
     "mcp-apps:update-server-access",
-    async (_, appName: string, serverAccess: TokenServerAccess) => {
+    async (
+      _,
+      appName: string,
+      serverAccess: TokenServerAccess,
+      toolAccess?: TokenToolAccess,
+    ) => {
       try {
-        return await updateAppServerAccess(appName, serverAccess);
+        return await updateAppServerAccess(appName, serverAccess, toolAccess);
       } catch (error) {
         console.error(`Failed to update server access for ${appName}:`, error);
         return {

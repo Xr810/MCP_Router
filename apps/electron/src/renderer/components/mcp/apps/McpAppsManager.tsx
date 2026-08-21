@@ -16,11 +16,28 @@ import {
 import HowToUse, { HowToUseHandle } from "./HowToUse";
 import { toast } from "sonner";
 import { ScrollArea, ScrollBar } from "@mcp_router/ui";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@mcp_router/ui";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@mcp_router/ui";
+import { ChevronDown } from "lucide-react";
 
 import {
   McpApp,
   McpAppsManagerResult,
+  MCPTool,
   TokenServerAccess,
+  TokenToolAccess,
+  cloneTokenToolAccess,
 } from "@mcp_router/shared";
 import {
   UNASSIGNED_PROJECT_ID,
@@ -37,6 +54,14 @@ const McpAppsManager: React.FC = () => {
   const [selectedApp, setSelectedApp] = useState<McpApp | null>(null);
   const [selectedServerAccess, setSelectedServerAccess] =
     useState<TokenServerAccess>({});
+  const [selectedToolAccess, setSelectedToolAccess] = useState<TokenToolAccess>(
+    {},
+  );
+  const [legacyToolAccess, setLegacyToolAccess] = useState(false);
+  const [serverTools, setServerTools] = useState<Record<string, MCPTool[]>>({});
+  const [serverToolStatus, setServerToolStatus] = useState<
+    Record<string, "loading" | "ready" | "not-running" | "error">
+  >({});
   const [isAccessControlDialogOpen, setIsAccessControlDialogOpen] =
     useState<boolean>(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
@@ -55,55 +80,224 @@ const McpAppsManager: React.FC = () => {
     listProjects();
   }, [listProjects]);
 
+  const selectedServerAccessRef = useRef(selectedServerAccess);
+  selectedServerAccessRef.current = selectedServerAccess;
+  const selectedToolAccessRef = useRef(selectedToolAccess);
+  selectedToolAccessRef.current = selectedToolAccess;
+
+  const mergeKnownTools = (
+    server: any,
+    listed: MCPTool[] | undefined,
+  ): MCPTool[] => {
+    const byName = new Map<string, MCPTool>();
+    const add = (tool: MCPTool | undefined) => {
+      if (!tool?.name || byName.has(tool.name)) {
+        return;
+      }
+      byName.set(tool.name, {
+        name: tool.name,
+        description: tool.description,
+        enabled: tool.enabled !== false,
+      });
+    };
+
+    (listed || []).forEach(add);
+    (server.cachedTools || []).forEach(add);
+    (server.tools || []).forEach(add);
+    Object.entries(selectedToolAccessRef.current[server.id] || {}).forEach(
+      ([name, allowed]) => {
+        if (allowed) {
+          add({ name, enabled: true });
+        }
+      },
+    );
+
+    return [...byName.values()];
+  };
+
+  useEffect(() => {
+    if (!isAccessControlDialogOpen || servers.length === 0) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadTools = async () => {
+      const nextTools: Record<string, MCPTool[]> = {};
+      const nextStatus: Record<
+        string,
+        "loading" | "ready" | "not-running" | "error"
+      > = {};
+
+      servers.forEach((server) => {
+        nextStatus[server.id] = "loading";
+      });
+      setServerToolStatus({ ...nextStatus });
+
+      await Promise.all(
+        servers.map(async (server) => {
+          try {
+            const tools = await platformAPI.servers.listTools(server.id);
+            if (cancelled) {
+              return;
+            }
+            nextTools[server.id] = mergeKnownTools(server, tools);
+            nextStatus[server.id] = "ready";
+          } catch (error) {
+            if (cancelled) {
+              return;
+            }
+            const rawMessage =
+              error instanceof Error ? error.message : String(error);
+            const fallback = mergeKnownTools(server, undefined);
+            if (fallback.length > 0) {
+              nextTools[server.id] = fallback;
+              nextStatus[server.id] = "ready";
+              return;
+            }
+            nextStatus[server.id] = /must be running/i.test(rawMessage)
+              ? "not-running"
+              : "error";
+          }
+        }),
+      );
+
+      if (cancelled) {
+        return;
+      }
+
+      setServerTools(nextTools);
+      setServerToolStatus({ ...nextStatus });
+
+      if (legacyToolAccess) {
+        const currentServerAccess = selectedServerAccessRef.current;
+        setSelectedToolAccess((prev) => {
+          const next = { ...prev };
+          Object.entries(nextTools).forEach(([serverId, tools]) => {
+            if (currentServerAccess[serverId] !== true) {
+              return;
+            }
+            next[serverId] = { ...(next[serverId] || {}) };
+            tools.forEach((tool) => {
+              if (next[serverId][tool.name] === undefined) {
+                next[serverId][tool.name] = tool.enabled !== false;
+              }
+            });
+          });
+          return next;
+        });
+      }
+    };
+
+    void loadTools();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAccessControlDialogOpen, servers, legacyToolAccess]);
+
   // アクセス制御ダイアログを開く
   const openAccessControlDialog = (app: McpApp) => {
     setSelectedApp(app);
 
-    // アプリのサーバーアクセスを設定
     const appServerAccess = app.serverAccess || {};
     setSelectedServerAccess({ ...appServerAccess });
+    setSelectedToolAccess(cloneTokenToolAccess(app.toolAccess) || {});
+    setLegacyToolAccess(app.toolAccess == null);
+    setServerTools({});
+    setServerToolStatus({});
 
     setIsAccessControlDialogOpen(true);
   };
 
-  // サーバーチェックボックスの変更
+  const clearToolsForServers = (
+    prev: TokenToolAccess,
+    serverIds: string[],
+  ): TokenToolAccess => {
+    const next = { ...prev };
+    serverIds.forEach((serverId) => {
+      delete next[serverId];
+    });
+    return next;
+  };
+
   const handleServerCheckboxChange = (serverId: string, checked: boolean) => {
     setSelectedServerAccess((prev) => ({
       ...prev,
       [serverId]: checked,
     }));
+    if (!checked) {
+      setSelectedToolAccess((prev) => clearToolsForServers(prev, [serverId]));
+    }
   };
 
   const handleProjectCheckboxChange = (projectId: string, checked: boolean) => {
-    setSelectedServerAccess((prev) => {
-      const next = { ...prev };
-      const targetProjectId = projectId || UNASSIGNED_PROJECT_ID;
-      const value = !!checked;
-
-      servers.forEach((server) => {
+    const targetProjectId = projectId || UNASSIGNED_PROJECT_ID;
+    const affectedIds = servers
+      .filter((server) => {
         const serverProjectId =
           server.projectId === null || server.projectId === undefined
             ? UNASSIGNED_PROJECT_ID
             : server.projectId;
+        return serverProjectId === targetProjectId;
+      })
+      .map((server) => server.id);
 
-        if (serverProjectId === targetProjectId) {
-          next[server.id] = value;
-        }
+    setSelectedServerAccess((prev) => {
+      const next = { ...prev };
+      affectedIds.forEach((id) => {
+        next[id] = !!checked;
       });
-
       return next;
+    });
+
+    if (!checked) {
+      setSelectedToolAccess((prev) => clearToolsForServers(prev, affectedIds));
+    }
+  };
+
+  const handleToolCheckboxChange = (
+    serverId: string,
+    toolName: string,
+    checked: boolean,
+  ) => {
+    setSelectedToolAccess((prev) => ({
+      ...prev,
+      [serverId]: {
+        ...(prev[serverId] || {}),
+        [toolName]: checked,
+      },
+    }));
+  };
+
+  const handleServerToolsCheckboxChange = (
+    serverId: string,
+    tools: MCPTool[],
+    checked: boolean,
+  ) => {
+    setSelectedToolAccess((prev) => {
+      const nextTools = { ...(prev[serverId] || {}) };
+      tools.forEach((tool) => {
+        if (tool.enabled === false) {
+          return;
+        }
+        nextTools[tool.name] = checked;
+      });
+      return {
+        ...prev,
+        [serverId]: nextTools,
+      };
     });
   };
 
-  // アクセス設定の保存
   const saveAccessControl = async () => {
     if (!selectedApp) return;
 
     try {
-      // サーバーアクセスの更新
       const serverResult = await platformAPI.apps.updateServerAccess(
         selectedApp.name,
         selectedServerAccess,
+        selectedToolAccess,
       );
 
       if (!serverResult.success) {
@@ -170,13 +364,10 @@ const McpAppsManager: React.FC = () => {
       const result = await platformAPI.apps.create(customAppName);
 
       if (result.success && result.app) {
-        // アプリリストに追加
         setApps((prevApps) => [...prevApps, result.app!]);
-        toast.success(result.message);
-        setCustomAppName(""); // 入力欄をクリア
-        if (result.app.token) {
-          openHowToUseModal(result.app);
-        }
+        toast.success(t("mcpApps.keyIssued"));
+        setCustomAppName("");
+        openAccessControlDialog(result.app);
       } else {
         toast.error(result.message);
       }
@@ -198,7 +389,7 @@ const McpAppsManager: React.FC = () => {
         );
         toast.success(result.message);
         if (result.app.token) {
-          openHowToUseModal(result.app);
+          openAccessControlDialog(result.app);
         }
       } else {
         toast.error(result.message);
@@ -221,29 +412,6 @@ const McpAppsManager: React.FC = () => {
       );
     }
     return <Badge variant="secondary">{t("mcpApps.installed")}</Badge>;
-  };
-
-  // アプリの設定を統一（他のMCPサーバ設定を削除）
-  const handleUnifyConfig = async (appName: string) => {
-    try {
-      const result: McpAppsManagerResult =
-        await platformAPI.apps.unifyConfig(appName);
-
-      if (result.success && result.app) {
-        // アプリリストを更新
-        setApps((prevApps) =>
-          prevApps.map((app) => (app.name === appName ? result.app! : app)),
-        );
-        toast.success(result.message);
-      } else {
-        toast.error(result.message);
-      }
-    } catch (error: any) {
-      console.error(`Failed to unify config for ${appName}:`, error);
-      toast.error(
-        `Error unifying configuration for ${appName}: ${error.message}`,
-      );
-    }
   };
 
   // Function to open HowToUse modal with the token from the selected app
@@ -326,6 +494,45 @@ const McpAppsManager: React.FC = () => {
     });
   })();
 
+  const issuedKeys = apps.filter((app) => !!app.token);
+  const localApps = apps.filter((app) => !app.token && !app.isCustom);
+
+  const maskToken = (token: string) => {
+    if (token.length <= 12) {
+      return token;
+    }
+    return `${token.slice(0, 10)}…${token.slice(-4)}`;
+  };
+
+  const copyToken = async (token: string) => {
+    try {
+      await navigator.clipboard.writeText(token);
+      toast.success(t("mcpApps.tokenCopied"));
+    } catch {
+      toast.error(t("mcpApps.tokenCopyFailed"));
+    }
+  };
+
+  const describeAccess = (app: McpApp) => {
+    const granted = servers.filter(
+      (server) => app.serverAccess?.[server.id] === true,
+    );
+    if (granted.length === 0) {
+      return t("mcpApps.noAccess");
+    }
+    const toolCount = granted.reduce((count, server) => {
+      const tools = app.toolAccess?.[server.id] || {};
+      return count + Object.values(tools).filter(Boolean).length;
+    }, 0);
+    if (app.toolAccess == null) {
+      return t("mcpApps.accessSummaryLegacy", { servers: granted.length });
+    }
+    return t("mcpApps.accessSummary", {
+      servers: granted.length,
+      tools: toolCount,
+    });
+  };
+
   return (
     <div className="flex flex-col gap-5">
       <div className="space-y-1">
@@ -370,145 +577,174 @@ const McpAppsManager: React.FC = () => {
           {t("common.loading")}
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
-          {[...apps]
-            .sort((a, b) => {
-              const rank = (name: string) =>
-                name.toLowerCase() === "hermes" ? 0 : 1;
-              return rank(a.name) - rank(b.name) || a.name.localeCompare(b.name);
-            })
-            .map((app) => {
-            return (
-              <div
-                key={app.name}
-                className={
-                  app.name.toLowerCase() === "hermes"
-                    ? "rounded-lg border border-[#2563eb]/40 bg-card overflow-hidden flex flex-col ring-1 ring-[#2563eb]/15"
-                    : "rounded-lg border border-border bg-card overflow-hidden flex flex-col"
-                }
-              >
-                <div className="p-4 pb-3 flex justify-between items-start gap-3">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    {app.icon && (
-                      <div
-                        className="w-6 h-6 flex items-center justify-center shrink-0"
-                        dangerouslySetInnerHTML={{
-                          __html: app.icon.replace(
-                            /<svg/g,
-                            '<svg style="width: 100%; height: 100%; max-width: 24px; max-height: 24px;"',
-                          ),
-                        }}
-                      />
-                    )}
-                    <div className="min-w-0">
-                      <h3 className="text-sm font-semibold tracking-tight truncate">
-                        {app.name}
-                      </h3>
-                      {app.name.toLowerCase() === "hermes" ? (
-                        <p className="text-[11px] text-[#2563eb] font-medium tracking-wide uppercase">
-                          Recommended for JE
-                        </p>
-                      ) : null}
-                    </div>
-                  </div>
-                  <div className="flex gap-2 shrink-0">{getStatusBadge(app)}</div>
-                </div>
-                <div className="px-4 pb-3 flex-1 space-y-2">
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {app.configured
-                      ? t("mcpApps.configured")
-                      : app.installed
-                        ? t("mcpApps.notConfigured")
-                        : t("mcpApps.installRequired")}
-                  </p>
-                  {app.token ? (
-                    <button
-                      type="button"
-                      className="w-full text-left rounded-md border border-border bg-muted/20 px-2.5 py-1.5 font-mono text-[11px] text-muted-foreground truncate hover:text-foreground hover:border-[#2563eb]/40"
-                      title={t("mcpApps.copyToken", "Copy token")}
-                      onClick={async () => {
-                        try {
-                          await navigator.clipboard.writeText(app.token!);
-                          toast.success(
-                            t("mcpApps.tokenCopied", "Token copied"),
-                          );
-                        } catch {
-                          toast.error(t("mcpApps.tokenCopyFailed", "Could not copy token"));
-                        }
-                      }}
-                    >
-                      {app.token}
-                    </button>
-                  ) : null}
-                </div>
-                <div className="px-4 py-3 border-t border-border bg-muted/15 flex gap-2 justify-between flex-wrap">
-                  <div className="flex gap-2 flex-wrap">
-                    {app.token && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openHowToUseModal(app)}
-                      >
-                        {t("mcpApps.howToUse")}
-                      </Button>
-                    )}
-                    {app.isCustom && (
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => openDeleteDialog(app)}
-                      >
-                        {t("mcpApps.delete")}
-                      </Button>
-                    )}
-                  </div>
-                  <div>
-                    {!app.configured && !app.token ? (
-                      <Button
-                        onClick={() => handleAddConfig(app.name)}
-                        className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white border-0"
-                      >
-                        {app.installed
-                          ? t("mcpApps.addMcpConfig")
-                          : t("mcpApps.notAvailable")}
-                      </Button>
-                    ) : (
-                      <div className="flex gap-2 flex-wrap">
-                        {!app.configured && (
-                          <Button
-                            onClick={() => handleAddConfig(app.name)}
-                            size="sm"
-                            className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white border-0"
-                          >
-                            {t("mcpApps.addMcpConfig")}
-                          </Button>
-                        )}
-                        {app.hasOtherServers && (
-                          <Button
-                            onClick={() => handleUnifyConfig(app.name)}
-                            variant="outline"
-                            size="sm"
-                          >
-                            {t("mcpApps.unify")}
-                          </Button>
-                        )}
-                        {app.token && (
-                          <Button
-                            onClick={() => openAccessControlDialog(app)}
-                            variant="outline"
-                            size="sm"
-                          >
-                            {t("mcpApps.serverAccess")}
-                          </Button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
+        <>
+          <section className="rounded-lg border border-border bg-card overflow-hidden">
+            <div className="px-4 py-3 border-b border-border">
+              <h2 className="text-base font-semibold tracking-tight">
+                {t("mcpApps.keyList")}
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                {t("mcpApps.keyListDescription")}
+              </p>
+            </div>
+            {issuedKeys.length === 0 ? (
+              <div className="px-4 py-10 text-sm text-muted-foreground text-center">
+                {t("mcpApps.noKeys")}
               </div>
-            );
-          })}
-        </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("mcpApps.columnName")}</TableHead>
+                    <TableHead>{t("mcpApps.columnToken")}</TableHead>
+                    <TableHead>{t("mcpApps.columnAccess")}</TableHead>
+                    <TableHead className="text-right">
+                      {t("mcpApps.columnActions")}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {[...issuedKeys]
+                    .sort((a, b) => {
+                      const rank = (name: string) =>
+                        name.toLowerCase() === "hermes" ? 0 : 1;
+                      return (
+                        rank(a.name) - rank(b.name) ||
+                        a.name.localeCompare(b.name)
+                      );
+                    })
+                    .map((app) => (
+                      <TableRow key={app.name}>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2 min-w-0">
+                            {app.icon ? (
+                              <div
+                                className="w-5 h-5 shrink-0"
+                                dangerouslySetInnerHTML={{
+                                  __html: app.icon.replace(
+                                    /<svg/g,
+                                    '<svg style="width: 100%; height: 100%; max-width: 20px; max-height: 20px;"',
+                                  ),
+                                }}
+                              />
+                            ) : null}
+                            <span className="truncate">{app.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <button
+                            type="button"
+                            className="max-w-[220px] text-left rounded-md border border-border bg-muted/20 px-2 py-1 font-mono text-[11px] text-muted-foreground truncate hover:text-foreground hover:border-[#2563eb]/40"
+                            title={t("mcpApps.copyToken")}
+                            onClick={() => copyToken(app.token!)}
+                          >
+                            {maskToken(app.token!)}
+                          </button>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
+                          {describeAccess(app)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex gap-2 justify-end flex-wrap">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openAccessControlDialog(app)}
+                            >
+                              {t("mcpApps.serverAccess")}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openHowToUseModal(app)}
+                            >
+                              {t("mcpApps.howToUse")}
+                            </Button>
+                            {app.isCustom ? (
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => openDeleteDialog(app)}
+                              >
+                                {t("mcpApps.delete")}
+                              </Button>
+                            ) : null}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            )}
+          </section>
+
+          {localApps.length > 0 ? (
+            <Collapsible className="rounded-lg border border-border bg-card">
+              <CollapsibleTrigger className="flex w-full items-center justify-between px-4 py-3 text-left">
+                <div>
+                  <h2 className="text-base font-semibold tracking-tight">
+                    {t("mcpApps.localApps")}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    {t("mcpApps.localAppsDescription")}
+                  </p>
+                </div>
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="grid gap-4 md:grid-cols-2 p-4 pt-0">
+                  {localApps.map((app) => (
+                    <div
+                      key={app.name}
+                      className="rounded-lg border border-border bg-background overflow-hidden flex flex-col"
+                    >
+                      <div className="p-4 pb-3 flex justify-between items-start gap-3">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          {app.icon && (
+                            <div
+                              className="w-6 h-6 flex items-center justify-center shrink-0"
+                              dangerouslySetInnerHTML={{
+                                __html: app.icon.replace(
+                                  /<svg/g,
+                                  '<svg style="width: 100%; height: 100%; max-width: 24px; max-height: 24px;"',
+                                ),
+                              }}
+                            />
+                          )}
+                          <h3 className="text-sm font-semibold tracking-tight truncate">
+                            {app.name}
+                          </h3>
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                          {getStatusBadge(app)}
+                        </div>
+                      </div>
+                      <div className="px-4 pb-3 flex-1">
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {app.installed
+                            ? t("mcpApps.notConfigured")
+                            : t("mcpApps.installRequired")}
+                        </p>
+                      </div>
+                      <div className="px-4 py-3 border-t border-border bg-muted/15 flex gap-2 justify-end">
+                        <Button
+                          onClick={() => handleAddConfig(app.name)}
+                          size="sm"
+                          className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white border-0"
+                          disabled={!app.installed}
+                        >
+                          {app.installed
+                            ? t("mcpApps.addMcpConfig")
+                            : t("mcpApps.notAvailable")}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          ) : null}
+        </>
       )}
 
       {/* アクセス制御ダイアログ（サーバーアクセスとトークンスコープを統合） */}
@@ -516,14 +752,13 @@ const McpAppsManager: React.FC = () => {
         open={isAccessControlDialogOpen}
         onOpenChange={setIsAccessControlDialogOpen}
       >
-        <DialogContent className="max-w-md overflow-hidden">
+        <DialogContent className="max-w-lg overflow-hidden">
           <DialogHeader>
             <DialogTitle>
               {t("mcpApps.serverAccess")} - {selectedApp?.name}
             </DialogTitle>
           </DialogHeader>
 
-          {/* Replaced Tabs with direct content */}
           <div className="py-4">
             <p className="text-sm text-muted-foreground mb-4">
               {t("mcpApps.selectServers")}
@@ -563,24 +798,132 @@ const McpAppsManager: React.FC = () => {
                           {selectedCount}/{totalServers}
                         </span>
                       </div>
-                      <div className="space-y-1 pl-6">
-                        {section.servers.map((server) => (
-                          <div
-                            key={server.id}
-                            className="flex items-center space-x-3"
-                          >
-                            <Checkbox
-                              id={`server-${server.id}`}
-                              checked={selectedServerAccess[server.id] === true}
-                              onCheckedChange={(checked) =>
-                                handleServerCheckboxChange(server.id, !!checked)
-                              }
-                            />
-                            <Label htmlFor={`server-${server.id}`}>
-                              {server.name}
-                            </Label>
-                          </div>
-                        ))}
+                      <div className="space-y-3 pl-6">
+                        {section.servers.map((server) => {
+                          const serverEnabled =
+                            selectedServerAccess[server.id] === true;
+                          const tools = serverTools[server.id] || [];
+                          const grantableTools = tools.filter(
+                            (tool) => tool.enabled !== false,
+                          );
+                          const selectedToolCount = grantableTools.filter(
+                            (tool) =>
+                              selectedToolAccess[server.id]?.[tool.name] ===
+                              true,
+                          ).length;
+                          const allToolsSelected =
+                            grantableTools.length > 0 &&
+                            selectedToolCount === grantableTools.length;
+                          const toolStatus =
+                            serverToolStatus[server.id] || "loading";
+                          const usingCachedTools =
+                            toolStatus === "ready" &&
+                            server.status !== "running";
+
+                          return (
+                            <div key={server.id} className="space-y-1">
+                              <div className="flex items-center space-x-3">
+                                <Checkbox
+                                  id={`server-${server.id}`}
+                                  checked={serverEnabled}
+                                  onCheckedChange={(checked) =>
+                                    handleServerCheckboxChange(
+                                      server.id,
+                                      !!checked,
+                                    )
+                                  }
+                                />
+                                <Label htmlFor={`server-${server.id}`}>
+                                  {server.name}
+                                </Label>
+                              </div>
+                              {serverEnabled && (
+                                <div className="space-y-1 pl-6">
+                                  {toolStatus === "loading" && (
+                                    <p className="text-xs text-muted-foreground">
+                                      {t("mcpApps.loadingTools")}
+                                    </p>
+                                  )}
+                                  {toolStatus === "not-running" && (
+                                    <p className="text-xs text-muted-foreground">
+                                      {t("mcpApps.toolsNeedServerRunning")}
+                                    </p>
+                                  )}
+                                  {toolStatus === "error" && (
+                                    <p className="text-xs text-muted-foreground">
+                                      {t("mcpApps.toolsLoadFailed")}
+                                    </p>
+                                  )}
+                                  {toolStatus === "ready" &&
+                                    grantableTools.length === 0 && (
+                                      <p className="text-xs text-muted-foreground">
+                                        {t("mcpApps.noTools")}
+                                      </p>
+                                    )}
+                                  {toolStatus === "ready" &&
+                                    grantableTools.length > 0 && (
+                                      <>
+                                        {usingCachedTools && (
+                                          <p className="text-xs text-muted-foreground">
+                                            {t("mcpApps.toolsFromCache")}
+                                          </p>
+                                        )}
+                                        <div className="flex items-center space-x-2">
+                                          <Checkbox
+                                            id={`tools-all-${server.id}`}
+                                            checked={allToolsSelected}
+                                            onCheckedChange={(checked) =>
+                                              handleServerToolsCheckboxChange(
+                                                server.id,
+                                                grantableTools,
+                                                !!checked,
+                                              )
+                                            }
+                                          />
+                                          <Label
+                                            htmlFor={`tools-all-${server.id}`}
+                                            className="text-xs text-muted-foreground"
+                                          >
+                                            {t("mcpApps.allTools")} (
+                                            {selectedToolCount}/
+                                            {grantableTools.length})
+                                          </Label>
+                                        </div>
+                                        {grantableTools.map((tool) => (
+                                          <div
+                                            key={tool.name}
+                                            className="flex items-center space-x-2"
+                                          >
+                                            <Checkbox
+                                              id={`tool-${server.id}-${tool.name}`}
+                                              checked={
+                                                selectedToolAccess[server.id]?.[
+                                                  tool.name
+                                                ] === true
+                                              }
+                                              onCheckedChange={(checked) =>
+                                                handleToolCheckboxChange(
+                                                  server.id,
+                                                  tool.name,
+                                                  !!checked,
+                                                )
+                                              }
+                                            />
+                                            <Label
+                                              htmlFor={`tool-${server.id}-${tool.name}`}
+                                              className="text-xs font-normal"
+                                            >
+                                              {tool.name}
+                                            </Label>
+                                          </div>
+                                        ))}
+                                      </>
+                                    )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   );

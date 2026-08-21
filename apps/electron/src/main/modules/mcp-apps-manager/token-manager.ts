@@ -5,6 +5,7 @@ import {
   TokenGenerateOptions,
   TokenValidationResult,
   TokenServerAccess,
+  TokenToolAccess,
 } from "@mcp_router/shared";
 
 const DEFAULT_TOKEN_TTL_SECONDS = 30 * 24 * 60 * 60;
@@ -42,6 +43,7 @@ export class TokenManager {
       issuedAt: now,
       expiresAt: now + ttl,
       serverAccess: options.serverAccess || {},
+      toolAccess: options.toolAccess ?? {},
     };
 
     // トークンを永続化
@@ -109,15 +111,40 @@ export class TokenManager {
   }
 
   /**
+   * Whether this key may list/call a tool.
+   * Legacy tokens without `toolAccess` keep all tools on granted servers.
+   * New keys persist `toolAccess: {}` and deny until an admin grants tools.
+   */
+  public hasToolAccess(
+    tokenId: string,
+    serverId: string,
+    toolName: string,
+  ): boolean {
+    const token = McpAppsManagerRepository.getInstance().getToken(tokenId);
+    if (!token) {
+      return false;
+    }
+    if (!token.serverAccess?.[serverId]) {
+      return false;
+    }
+    if (token.toolAccess == null) {
+      return true;
+    }
+    return token.toolAccess[serverId]?.[toolName] === true;
+  }
+
+  /**
    * トークンのサーバアクセス権限を更新
    */
   public updateTokenServerAccess(
     tokenId: string,
     serverAccess: TokenServerAccess,
+    toolAccess?: TokenToolAccess,
   ): boolean {
     return McpAppsManagerRepository.getInstance().updateTokenServerAccess(
       tokenId,
       serverAccess || {},
+      toolAccess,
     );
   }
 }

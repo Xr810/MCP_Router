@@ -32,6 +32,7 @@ export class RequestHandlers extends RequestHandlerBase {
   private serverNameToIdMap: Map<string, string>;
   private toolCatalogService: ToolCatalogService;
   private toolCatalogHandler: ToolCatalogHandler;
+  private serverManager: MCPServerManager;
 
   constructor(
     serverManager: MCPServerManager,
@@ -42,6 +43,7 @@ export class RequestHandlers extends RequestHandlerBase {
     super(tokenValidator);
 
     // Get maps from server manager
+    this.serverManager = serverManager;
     this.servers = maps.servers;
     this.clients = maps.clients;
     this.serverNameToIdMap = maps.serverNameToIdMap;
@@ -606,6 +608,8 @@ export class RequestHandlers extends RequestHandlerBase {
           continue;
         }
 
+        this.serverManager.cacheDiscoveredTools(serverId, tools.tools);
+
         const permissions = (server?.toolPermissions ?? {}) as Record<
           string,
           boolean
@@ -613,6 +617,13 @@ export class RequestHandlers extends RequestHandlerBase {
 
         for (const tool of tools.tools) {
           if (permissions[tool.name] === false) {
+            continue;
+          }
+
+          if (
+            token &&
+            !this.tokenValidator.hasToolAccess(token, serverId, tool.name)
+          ) {
             continue;
           }
 
@@ -707,6 +718,16 @@ export class RequestHandlers extends RequestHandlerBase {
       throw new McpError(
         ErrorCode.InvalidRequest,
         `Tool "${originalToolName}" is disabled for this server`,
+      );
+    }
+
+    if (
+      token &&
+      !this.tokenValidator.hasToolAccess(token, serverId, originalToolName)
+    ) {
+      throw new McpError(
+        ErrorCode.InvalidRequest,
+        "Token does not have access to this tool",
       );
     }
 

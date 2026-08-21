@@ -28,6 +28,7 @@ export interface SearchProvider {
 type SearchContext = {
   projectId: string | null;
   allowedServerIds?: Set<string>;
+  isToolAllowed?: (serverId: string, toolName: string) => boolean;
   toolCatalogEnabled?: boolean;
 };
 
@@ -118,9 +119,17 @@ export class ToolCatalogService {
       try {
         const toolResponse = await client.listTools();
         const toolList = toolResponse?.tools ?? [];
+        this.serverManager.cacheDiscoveredTools(serverId, toolList);
 
         for (const tool of toolList) {
           if (permissions[tool.name] === false) {
+            continue;
+          }
+
+          if (
+            context.isToolAllowed &&
+            !context.isToolAllowed(serverId, tool.name)
+          ) {
             continue;
           }
 

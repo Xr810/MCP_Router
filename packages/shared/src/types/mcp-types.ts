@@ -10,6 +10,13 @@ export interface MCPInputParam {
   max?: number;
 }
 
+export interface MCPTool {
+  name: string;
+  description?: string;
+  enabled?: boolean;
+  inputSchema?: any;
+}
+
 export interface MCPServerConfig {
   id: string;
   name: string;
@@ -34,13 +41,8 @@ export interface MCPServerConfig {
   version?: string;
 
   toolPermissions?: MCPServerToolPermissions;
-}
-
-export interface MCPTool {
-  name: string;
-  description?: string;
-  enabled?: boolean;
-  inputSchema?: any;
+  /** Last tools/list result, used when the server is not running. */
+  cachedTools?: MCPTool[];
 }
 
 export interface MCPServerToolPermissions {

@@ -4,7 +4,7 @@ import {
   IconSettings,
   IconServer,
   IconActivity,
-  IconDeviceDesktop,
+  IconKey,
   IconDownload,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
@@ -118,7 +118,7 @@ const SidebarComponent: React.FC = () => {
                         to="/clients"
                         className="flex items-center gap-3 py-5 px-3 w-full"
                       >
-                        <IconDeviceDesktop className="h-6 w-6" />
+                        <IconKey className="h-6 w-6" />
                         <span className="text-base">{t("mcpApps.title")}</span>
                       </Link>
                     </SidebarMenuButton>

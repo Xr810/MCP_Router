@@ -8,6 +8,9 @@ import {
   Token,
   DEFAULT_APP_SETTINGS,
   TokenServerAccess,
+  TokenToolAccess,
+  cloneTokenToolAccess,
+  pruneTokenToolAccess,
 } from "@mcp_router/shared";
 import { SqliteManager } from "./database/sqlite-manager";
 
@@ -33,6 +36,7 @@ export class SharedConfigManager implements ISharedConfigManager {
     return {
       ...token,
       serverAccess: { ...(token.serverAccess || {}) } as TokenServerAccess,
+      toolAccess: cloneTokenToolAccess(token.toolAccess),
     };
   }
 
@@ -79,6 +83,12 @@ export class SharedConfigManager implements ISharedConfigManager {
             normalizedToken.serverAccess = {
               ...(serverAccessValue as TokenServerAccess),
             };
+
+            if (token.toolAccess && typeof token.toolAccess === "object") {
+              normalizedToken.toolAccess = cloneTokenToolAccess(
+                token.toolAccess as TokenToolAccess,
+              );
+            }
 
             return normalizedToken;
           });
@@ -200,6 +210,12 @@ export class SharedConfigManager implements ISharedConfigManager {
           token.serverAccess = { ...(row.serverAccess as TokenServerAccess) };
         }
 
+        if (row.toolAccess) {
+          token.toolAccess = cloneTokenToolAccess(
+            row.toolAccess as TokenToolAccess,
+          );
+        }
+
         return token;
       });
 
@@ -265,6 +281,7 @@ export class SharedConfigManager implements ISharedConfigManager {
     const normalizedToken: Token = {
       ...token,
       serverAccess: token.serverAccess || {},
+      toolAccess: cloneTokenToolAccess(token.toolAccess),
     };
 
     const index = this.config.mcpApps.tokens.findIndex(
@@ -313,10 +330,20 @@ export class SharedConfigManager implements ISharedConfigManager {
   updateTokenServerAccess(
     tokenId: string,
     serverAccess: TokenServerAccess,
+    toolAccess?: TokenToolAccess,
   ): void {
     const token = this.config.mcpApps.tokens.find((t) => t.id === tokenId);
     if (token) {
       token.serverAccess = serverAccess || {};
+      if (toolAccess !== undefined) {
+        token.toolAccess =
+          pruneTokenToolAccess(toolAccess, token.serverAccess) ?? {};
+      } else if (token.toolAccess) {
+        token.toolAccess = pruneTokenToolAccess(
+          token.toolAccess,
+          token.serverAccess,
+        );
+      }
       this.saveConfig();
     }
   }
@@ -341,6 +368,21 @@ export class SharedConfigManager implements ISharedConfigManager {
         console.log(
           `[SharedConfigManager] Removed stale server access from token ${token.id}`,
         );
+      }
+
+      if (token.toolAccess) {
+        const nextToolAccess = Object.fromEntries(
+          Object.entries(token.toolAccess).filter(([serverId]) =>
+            serverIds.has(serverId),
+          ),
+        );
+        if (
+          Object.keys(nextToolAccess).length !==
+          Object.keys(token.toolAccess).length
+        ) {
+          token.toolAccess = nextToolAccess;
+          updated = true;
+        }
       }
     });
 

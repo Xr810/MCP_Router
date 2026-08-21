@@ -40,7 +40,9 @@
 
 ## Behavioural Notes
 - When the server is stopped, the Tools tab can either request a start/retry or display guidance stating that tools require the server to be running.
+- The Keys Permissions dialog uses persisted `cachedTools` so admins can grant tools without the MCP being LIVE. Runtime still requires the server to be running to execute.
 - Tool fetching should handle failures gracefully (toast + retry option).
+- Server-level `toolPermissions` remain a global kill switch for every key. Per-key grants live on `Token.toolAccess` and are a subset of globally enabled tools.
 
 ## Testing & Validation
 - UI smoke test: toggle tool states, save, reopen sheet, and confirm persistence.

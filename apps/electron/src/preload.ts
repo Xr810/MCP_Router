@@ -6,6 +6,7 @@ import type {
   CreateServerInput,
   ProjectOptimization,
   TokenServerAccess,
+  TokenToolAccess,
   CreateSkillInput,
   UpdateSkillInput,
   CreateAgentPathInput,
@@ -87,8 +88,17 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("mcp-apps:add", appName),
   deleteMcpApp: (appName: string) =>
     ipcRenderer.invoke("mcp-apps:delete", appName),
-  updateAppServerAccess: (appName: string, serverAccess: TokenServerAccess) =>
-    ipcRenderer.invoke("mcp-apps:update-server-access", appName, serverAccess),
+  updateAppServerAccess: (
+    appName: string,
+    serverAccess: TokenServerAccess,
+    toolAccess?: TokenToolAccess,
+  ) =>
+    ipcRenderer.invoke(
+      "mcp-apps:update-server-access",
+      appName,
+      serverAccess,
+      toolAccess,
+    ),
   unifyAppConfig: (appName: string) =>
     ipcRenderer.invoke("mcp-apps:unify", appName),
 

@@ -40,6 +40,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
       required_params TEXT,
       project_id TEXT,
       tool_permissions TEXT,
+      cached_tools TEXT,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     )
@@ -163,6 +164,11 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         "ツール権限",
         {},
       );
+      const cachedTools = this.safeParseJSON<MCPServer["cachedTools"]>(
+        row.cached_tools,
+        "キャッシュ済みツール",
+        undefined,
+      );
 
       // エンティティオブジェクトを構築
       return {
@@ -184,6 +190,8 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         required: requiredParams,
         projectId: row.project_id || null,
         toolPermissions,
+        cachedTools,
+        tools: cachedTools,
         status: "stopped",
         logs: [],
       };
@@ -213,6 +221,9 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
       toolPermissions: entity.toolPermissions
         ? JSON.stringify(entity.toolPermissions)
         : null,
+      cachedTools: entity.cachedTools
+        ? JSON.stringify(entity.cachedTools)
+        : null,
       command: entity.command || null,
       args: JSON.stringify(entity.args || []),
       remoteUrl,
@@ -235,6 +246,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         args,
         remoteUrl,
         toolPermissions,
+        cachedTools,
       } = this.serializeEntityData(entity);
 
       // DB行オブジェクトを構築
@@ -253,6 +265,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         input_params: inputParams,
         project_id: entity.projectId ?? null,
         tool_permissions: toolPermissions,
+        cached_tools: cachedTools,
         description: entity.description || null,
         version: entity.version || null,
         latest_version: entity.latestVersion || null,
@@ -342,6 +355,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         args,
         remoteUrl,
         toolPermissions,
+        cachedTools,
       } = this.serializeEntityData(entity);
 
       // DB行オブジェクトを構築
@@ -360,6 +374,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         input_params: inputParams,
         project_id: entity.projectId ?? null,
         tool_permissions: toolPermissions,
+        cached_tools: cachedTools,
         description: entity.description || null,
         version: entity.version || null,
         latest_version: entity.latestVersion || null,
@@ -406,7 +421,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         status: existingServer.status,
         logs: existingServer.logs,
         errorMessage: existingServer.errorMessage,
-        tools: existingServer.tools,
+        tools: config.cachedTools ?? existingServer.tools,
         resources: existingServer.resources,
         prompts: existingServer.prompts,
       };

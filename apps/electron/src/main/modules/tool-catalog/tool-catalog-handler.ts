@@ -237,6 +237,12 @@ export class ToolCatalogHandler extends RequestHandlerBase {
           {
             projectId,
             allowedServerIds,
+            isToolAllowed: (serverId, toolName) =>
+              this.tokenValidator.hasToolAccess(
+                validatedToken,
+                serverId,
+                toolName,
+              ),
             toolCatalogEnabled: !!optimization,
           },
         );
@@ -305,6 +311,15 @@ export class ToolCatalogHandler extends RequestHandlerBase {
       throw new McpError(
         ErrorCode.InvalidRequest,
         `Tool "${toolName}" is disabled for this server`,
+      );
+    }
+
+    if (
+      !this.tokenValidator.hasToolAccess(validatedToken, serverId, toolName)
+    ) {
+      throw new McpError(
+        ErrorCode.InvalidRequest,
+        "Token does not have access to this tool",
       );
     }
 

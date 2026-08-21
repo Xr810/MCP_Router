@@ -72,6 +72,9 @@ export class MCPServerManager {
         server.status = "stopped";
         server.logs = [];
         server.toolPermissions = server.toolPermissions || {};
+        if (server.cachedTools?.length && !server.tools?.length) {
+          server.tools = server.cachedTools;
+        }
         this.servers.set(server.id, server);
 
         // Update server name to ID mapping
@@ -427,7 +430,34 @@ export class MCPServerManager {
   }
 
   /**
-   * List tools for a specific server
+   * Persist a tools/list snapshot so Permissions can grant tools while stopped.
+   */
+  public cacheDiscoveredTools(
+    id: string,
+    tools: Array<{ name: string; description?: string }>,
+  ): void {
+    const server = this.servers.get(id);
+    if (!server || tools.length === 0) {
+      return;
+    }
+
+    const permissions = server.toolPermissions || {};
+    const toolsWithStatus = tools.map((tool) => ({
+      name: tool.name,
+      description: tool.description,
+      enabled: permissions[tool.name] !== false,
+    }));
+
+    if (!server.tools?.length) {
+      server.tools = toolsWithStatus;
+    }
+
+    this.persistCachedTools(server, toolsWithStatus);
+  }
+
+  /**
+   * List tools for a specific server.
+   * Falls back to the last cached list when the server is not running.
    */
   public async listServerTools(id: string): Promise<MCPTool[]> {
     const server = this.servers.get(id);
@@ -441,6 +471,10 @@ export class MCPServerManager {
       (server.status === "running" || this.serverStatusMap.get(server.name));
 
     if (!isRunning || !client) {
+      const cached = this.getCachedToolsForServer(server);
+      if (cached.length > 0) {
+        return cached;
+      }
       throw new Error("Server must be running to list tools");
     }
 
@@ -453,7 +487,55 @@ export class MCPServerManager {
     }));
 
     server.tools = toolsWithStatus;
+    this.persistCachedTools(server, toolsWithStatus);
     return toolsWithStatus;
+  }
+
+  private getCachedToolsForServer(server: MCPServer): MCPTool[] {
+    const permissions = server.toolPermissions || {};
+    const byName = new Map<string, MCPTool>();
+
+    for (const tool of [
+      ...(Array.isArray(server.cachedTools) ? server.cachedTools : []),
+      ...(Array.isArray(server.tools) ? server.tools : []),
+    ]) {
+      if (!tool?.name || byName.has(tool.name)) {
+        continue;
+      }
+      byName.set(tool.name, {
+        name: tool.name,
+        description: tool.description,
+        enabled: permissions[tool.name] !== false,
+      });
+    }
+
+    for (const name of Object.keys(permissions)) {
+      if (!byName.has(name)) {
+        byName.set(name, {
+          name,
+          enabled: permissions[name] !== false,
+        });
+      }
+    }
+
+    return [...byName.values()];
+  }
+
+  private persistCachedTools(server: MCPServer, tools: MCPTool[]): void {
+    const cachedTools = tools.map(({ name, description, enabled }) => ({
+      name,
+      description,
+      enabled,
+    }));
+
+    if (
+      JSON.stringify(server.cachedTools ?? []) === JSON.stringify(cachedTools)
+    ) {
+      return;
+    }
+
+    server.cachedTools = cachedTools;
+    this.serverService.updateServer(server.id, { cachedTools });
   }
 
   /**

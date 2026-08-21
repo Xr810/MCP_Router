@@ -10,6 +10,7 @@ import type {
   Project,
   ProjectOptimization,
   TokenServerAccess,
+  TokenToolAccess,
   Skill,
   SkillWithContent,
   CreateSkillInput,
@@ -94,6 +95,7 @@ declare global {
       updateAppServerAccess: (
         appName: string,
         serverAccess: TokenServerAccess,
+        toolAccess?: TokenToolAccess,
       ) => Promise<McpAppsManagerResult>;
       unifyAppConfig: (appName: string) => Promise<McpAppsManagerResult>;
 

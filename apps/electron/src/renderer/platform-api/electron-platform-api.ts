@@ -85,8 +85,12 @@ class ElectronPlatformAPI implements PlatformAPI {
       list: () => window.electronAPI.listMcpApps(),
       create: (appName) => window.electronAPI.addMcpAppConfig(appName),
       delete: (appName) => window.electronAPI.deleteMcpApp(appName),
-      updateServerAccess: (appName, serverAccess) =>
-        window.electronAPI.updateAppServerAccess(appName, serverAccess),
+      updateServerAccess: (appName, serverAccess, toolAccess) =>
+        window.electronAPI.updateAppServerAccess(
+          appName,
+          serverAccess,
+          toolAccess,
+        ),
       unifyConfig: (appName) => window.electronAPI.unifyAppConfig(appName),
 
       // Token management

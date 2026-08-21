@@ -83,6 +83,12 @@ export class MainDatabaseMigration {
       execute: (db) => this.migrateAddToolPermissionsColumn(db),
     });
 
+    this.migrations.push({
+      id: "20260821_add_cached_tools_column",
+      description: "Add cached_tools column to servers table",
+      execute: (db) => this.migrateAddCachedToolsColumn(db),
+    });
+
     // Projects feature (servers.project_id 列とインデックス)
     this.migrations.push({
       id: "20251101_projects_bootstrap",
@@ -476,6 +482,37 @@ export class MainDatabaseMigration {
       }
     } catch (error) {
       console.error("Error while adding required_params column:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * cached_tools列を追加するマイグレーション
+   */
+  private migrateAddCachedToolsColumn(db: SqliteManager): void {
+    try {
+      const tableExists = db.get(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name = 'servers'",
+        {},
+      );
+
+      if (!tableExists) {
+        console.log("servers table does not exist, skipping this migration");
+        return;
+      }
+
+      const tableInfo = db.all("PRAGMA table_info(servers)");
+      const columnNames = tableInfo.map((col: any) => col.name);
+
+      if (!columnNames.includes("cached_tools")) {
+        console.log("Adding cached_tools column to servers");
+        db.execute("ALTER TABLE servers ADD COLUMN cached_tools TEXT");
+        console.log("cached_tools column added");
+      } else {
+        console.log("cached_tools column already exists, skipping");
+      }
+    } catch (error) {
+      console.error("Error while adding cached_tools column:", error);
       throw error;
     }
   }

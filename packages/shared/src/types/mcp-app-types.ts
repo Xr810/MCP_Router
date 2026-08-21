@@ -1,4 +1,4 @@
-import type { TokenServerAccess } from "./token-types";
+import type { TokenServerAccess, TokenToolAccess } from "./token-types";
 
 export interface McpApp {
   name: string;
@@ -7,6 +7,7 @@ export interface McpApp {
   configured: boolean;
   token?: string; // アプリ用のトークン
   serverAccess?: TokenServerAccess; // サーバーアクセスのオン・オフ状態
+  toolAccess?: TokenToolAccess;
   isCustom?: boolean; // カスタムアプリかどうか
   hasOtherServers?: boolean; // McpAppで、他のMCPサーバが設定されているかどうか（例：VSCodeで他のMCPサーバも設定されている）
   icon?: string; // アプリのアイコン（SVGやBase64など）

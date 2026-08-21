@@ -3,7 +3,7 @@
  */
 
 import type { McpApp, McpAppsManagerResult } from "../../mcp-app-types";
-import type { TokenServerAccess } from "../../token-types";
+import type { TokenServerAccess, TokenToolAccess } from "../../token-types";
 
 interface Token {
   id: string;
@@ -25,6 +25,7 @@ export interface AppAPI {
   updateServerAccess(
     appName: string,
     serverAccess: TokenServerAccess,
+    toolAccess?: TokenToolAccess,
   ): Promise<McpAppsManagerResult>;
   unifyConfig(appName: string): Promise<McpAppsManagerResult>;
 
