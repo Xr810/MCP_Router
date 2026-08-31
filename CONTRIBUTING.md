@@ -112,7 +112,7 @@ If you are unsure where a type should live, check existing patterns in `packages
    - `pnpm lint:fix`
    - `pnpm test:e2e` (when relevant to Electron)
 4. Update documentation as needed:
-   - `README.md`, `README_ja.md`, `README_zh.md`
+   - `README.md`
    - Files under `docs/` (design docs, ADRs, guidelines) if behavior or architecture changes
 5. Open a pull request:
    - Use a clear, descriptive title
