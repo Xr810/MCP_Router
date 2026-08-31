@@ -9,6 +9,7 @@ import type {
   TokenToolAccess,
   CreateSkillInput,
   UpdateSkillInput,
+  CreateAppOptions,
   CreateAgentPathInput,
 } from "@mcp_router/shared";
 
@@ -29,6 +30,16 @@ contextBridge.exposeInMainWorld("electronAPI", {
       ipcRenderer.removeListener("auth:status-changed", listener);
     };
   },
+
+  // Local desktop admin lock
+  getAdminStatus: () => ipcRenderer.invoke("admin:status"),
+  setupAdmin: (username: string, password: string) =>
+    ipcRenderer.invoke("admin:setup", username, password),
+  unlockAdmin: (username: string, password: string) =>
+    ipcRenderer.invoke("admin:unlock", username, password),
+  lockAdmin: () => ipcRenderer.invoke("admin:lock"),
+  changeAdminPassword: (currentPassword: string, nextPassword: string) =>
+    ipcRenderer.invoke("admin:change-password", currentPassword, nextPassword),
 
   // MCP Server Management
   listMcpServers: () => ipcRenderer.invoke("mcp:list"),
@@ -84,8 +95,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   // MCP Apps Management
   listMcpApps: () => ipcRenderer.invoke("mcp-apps:list"),
-  addMcpAppConfig: (appName: string) =>
-    ipcRenderer.invoke("mcp-apps:add", appName),
+  addMcpAppConfig: (appName: string, options?: CreateAppOptions) =>
+    ipcRenderer.invoke("mcp-apps:add", appName, options),
   deleteMcpApp: (appName: string) =>
     ipcRenderer.invoke("mcp-apps:delete", appName),
   updateAppServerAccess: (

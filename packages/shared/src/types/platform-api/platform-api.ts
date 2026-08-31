@@ -2,6 +2,7 @@
  * Platform API interface with consolidated domain structure
  */
 
+import { AdminAPI } from "./domains/admin-api";
 import { AuthAPI } from "./domains/auth-api";
 import { ServerAPI } from "./domains/server-api";
 import { AppAPI } from "./domains/app-api";
@@ -19,6 +20,9 @@ import { SkillsAPI } from "./domains/skills-api";
  * Consolidates related functionality into logical domains
  */
 export interface PlatformAPI {
+  // Local desktop admin lock (Electron UI). HTTP /mcp stays independent.
+  admin: AdminAPI;
+
   // Authentication domain
   auth: AuthAPI;
 

@@ -133,7 +133,7 @@
   - Value: project ID or `"__unassigned__"`
   - Omitted/empty: treated as “Unassigned” (note: this is not “All”)
   - Local workspaces validate the header against `ProjectRepository`; remote workspaces skip validation.
-- Authentication: validate Authorization (`Bearer <token>`) and enforce per‑server access plus per-key tool access (`Token.toolAccess`).
+- Authentication: validate Authorization (`Bearer <token>`), reject expired tokens, and enforce per‑server access plus per-key tool access (`Token.toolAccess`).
 - The HTTP layer attaches `_meta.token` and `_meta.projectId` to requests for the aggregator handlers.
 
 ## Security & Privacy

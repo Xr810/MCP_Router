@@ -78,8 +78,7 @@ const HowToUse = forwardRef<HowToUseHandle, HowToUseProps>(({ token }, ref) => {
             {t("mcpApps.howToUse")}
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Paste into{" "}
-            <span className="font-mono">~/.hermes/config.yaml</span>
+            Paste into <span className="font-mono">~/.hermes/config.yaml</span>
           </DialogDescription>
         </DialogHeader>
 

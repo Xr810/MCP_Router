@@ -15,6 +15,8 @@ import type {
   SkillWithContent,
   CreateSkillInput,
   UpdateSkillInput,
+  AdminStatus,
+  CreateAppOptions,
 } from "@mcp_router/shared";
 import {
   CreateServerInput,
@@ -44,6 +46,15 @@ declare global {
           user?: any;
         }) => void,
       ) => () => void;
+
+      getAdminStatus: () => Promise<AdminStatus>;
+      setupAdmin: (username: string, password: string) => Promise<AdminStatus>;
+      unlockAdmin: (username: string, password: string) => Promise<AdminStatus>;
+      lockAdmin: () => Promise<AdminStatus>;
+      changeAdminPassword: (
+        currentPassword: string,
+        nextPassword: string,
+      ) => Promise<AdminStatus>;
 
       listMcpServers: () => Promise<any>;
       startMcpServer: (id: string) => Promise<boolean>;
@@ -89,7 +100,10 @@ declare global {
 
       // MCP Apps Management
       listMcpApps: () => Promise<McpApp[]>;
-      addMcpAppConfig: (appName: string) => Promise<McpAppsManagerResult>;
+      addMcpAppConfig: (
+        appName: string,
+        options?: CreateAppOptions,
+      ) => Promise<McpAppsManagerResult>;
       deleteMcpApp: (appName: string) => Promise<boolean>;
       [key: string]: any;
       updateAppServerAccess: (

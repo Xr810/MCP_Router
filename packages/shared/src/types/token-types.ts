@@ -55,6 +55,15 @@ export interface Token {
   toolAccess?: TokenToolAccess;
 }
 
+export const DEFAULT_TOKEN_TTL_SECONDS = 30 * 24 * 60 * 60;
+
+export const TOKEN_TTL_SECONDS = {
+  oneDay: 24 * 60 * 60,
+  oneWeek: 7 * 24 * 60 * 60,
+  thirtyDays: DEFAULT_TOKEN_TTL_SECONDS,
+  ninetyDays: 90 * 24 * 60 * 60,
+} as const;
+
 /**
  * トークン生成時のオプション
  */
@@ -62,7 +71,8 @@ export interface TokenGenerateOptions {
   clientId: string; // クライアントID
   serverAccess: TokenServerAccess; // アクセスを許可するサーバIDマップ
   toolAccess?: TokenToolAccess;
-  expiresIn?: number; // トークンの有効期間（秒）、デフォルトは30日
+  /** Seconds until expiry. `null` means never expire. Omit for the 30-day default. */
+  expiresIn?: number | null;
 }
 
 /**

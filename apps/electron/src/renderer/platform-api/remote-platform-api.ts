@@ -206,6 +206,10 @@ export class RemotePlatformAPI implements PlatformAPI {
     return this.localPlatformAPI.auth;
   }
 
+  get admin() {
+    return this.localPlatformAPI.admin;
+  }
+
   get packages() {
     return this.localPlatformAPI.packages;
   }

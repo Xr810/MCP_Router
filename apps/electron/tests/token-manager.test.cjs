@@ -16,7 +16,9 @@ Module._load = function loadWithElectronStub(request, parent, isMain) {
     };
   }
   if (request === "@mcp_router/shared") {
-    return {};
+    return {
+      DEFAULT_TOKEN_TTL_SECONDS: 30 * 24 * 60 * 60,
+    };
   }
   return originalLoad.call(this, request, parent, isMain);
 };
@@ -90,21 +92,22 @@ describe("TokenManager", () => {
     });
   });
 
-  it("keeps tokens with expired expiresAt valid for MCP compatibility", () => {
+  it("rejects tokens whose expiresAt has passed", () => {
     tokens.set("mcpr_expired", {
       id: "mcpr_expired",
       clientId: "codex",
       issuedAt: Math.floor(Date.now() / 1000) - 60,
       expiresAt: Math.floor(Date.now() / 1000) - 1,
-      serverAccess: {},
+      serverAccess: { excel: true },
     });
 
-    const validation = new TokenManager().validateToken("mcpr_expired");
+    const manager = new TokenManager();
+    const validation = manager.validateToken("mcpr_expired");
 
-    assert.deepEqual(validation, {
-      isValid: true,
-      clientId: "codex",
-    });
+    assert.equal(validation.isValid, false);
+    assert.equal(validation.error, "Token expired");
+    assert.equal(manager.hasServerAccess("mcpr_expired", "excel"), false);
+    assert.equal(manager.hasToolAccess("mcpr_expired", "excel", "read"), false);
   });
 
   it("sets expiresAt on newly generated tokens", () => {
@@ -120,6 +123,17 @@ describe("TokenManager", () => {
     assert.equal(typeof token.expiresAt, "number");
     assert.ok(token.expiresAt >= before + 30 * 24 * 60 * 60);
     assert.deepEqual(token.toolAccess, {});
+  });
+
+  it("omits expiresAt when expiresIn is null", () => {
+    const token = new TokenManager().generateToken({
+      clientId: "forever",
+      serverAccess: {},
+      expiresIn: null,
+    });
+
+    assert.equal(token.expiresAt, undefined);
+    assert.equal(new TokenManager().validateToken(token.id).isValid, true);
   });
 
   it("denies tools on new keys until an admin grants them", () => {

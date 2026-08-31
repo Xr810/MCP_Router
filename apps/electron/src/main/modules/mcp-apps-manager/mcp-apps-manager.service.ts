@@ -20,6 +20,7 @@ import {
   MCPInputParam,
   TokenServerAccess,
   TokenToolAccess,
+  CreateAppOptions,
 } from "@mcp_router/shared";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 
@@ -550,6 +551,7 @@ export class McpAppsManagerService extends SingletonService<
             token: token.id,
             serverAccess: token.serverAccess,
             toolAccess: token.toolAccess,
+            expiresAt: token.expiresAt,
             isCustom: true,
             icon: undefined,
           };
@@ -570,6 +572,7 @@ export class McpAppsManagerService extends SingletonService<
       id: string;
       serverAccess: TokenServerAccess;
       toolAccess?: TokenToolAccess;
+      expiresAt?: number;
     },
     isStdApp: boolean,
   ): Promise<McpApp> {
@@ -599,6 +602,7 @@ export class McpAppsManagerService extends SingletonService<
         token: token.id,
         serverAccess: token.serverAccess,
         toolAccess: token.toolAccess,
+        expiresAt: token.expiresAt,
         isCustom: true,
         icon: undefined,
       };
@@ -629,6 +633,7 @@ export class McpAppsManagerService extends SingletonService<
       let token: string = knownToken || "";
       let serverAccess: TokenServerAccess | undefined = knownServerAccess;
       let toolAccess: TokenToolAccess | undefined = knownToolAccess;
+      let expiresAt: number | undefined;
       let isCustom = false;
       let hasOtherServers = false;
 
@@ -637,6 +642,7 @@ export class McpAppsManagerService extends SingletonService<
         token = appTokens[0].id;
         serverAccess = appTokens[0].serverAccess;
         toolAccess = appTokens[0].toolAccess;
+        expiresAt = appTokens[0].expiresAt;
       }
 
       // トークンの有効性チェックと設定状態の判定
@@ -684,6 +690,9 @@ export class McpAppsManagerService extends SingletonService<
           if (toolAccess === undefined) {
             toolAccess = tokenObj.toolAccess;
           }
+          if (expiresAt === undefined) {
+            expiresAt = tokenObj.expiresAt;
+          }
         }
       }
 
@@ -695,6 +704,7 @@ export class McpAppsManagerService extends SingletonService<
         token,
         serverAccess,
         toolAccess,
+        expiresAt,
         isCustom,
         hasOtherServers,
         icon: this.getStandardAppIcon(name),
@@ -733,7 +743,10 @@ export class McpAppsManagerService extends SingletonService<
   /**
    * アプリを追加（標準アプリとカスタムアプリの両方に対応）
    */
-  public async addApp(name: string): Promise<McpAppsManagerResult> {
+  public async addApp(
+    name: string,
+    options?: CreateAppOptions,
+  ): Promise<McpAppsManagerResult> {
     try {
       // 名前が空でないことを確認
       if (!name || name.trim() === "") {
@@ -775,6 +788,7 @@ export class McpAppsManagerService extends SingletonService<
         clientId: `${name.toLowerCase()}`,
         serverAccess,
         toolAccess: {},
+        expiresIn: options?.expiresIn,
       });
 
       // アプリ情報を取得
@@ -784,6 +798,7 @@ export class McpAppsManagerService extends SingletonService<
           id: token.id,
           serverAccess: token.serverAccess,
           toolAccess: token.toolAccess,
+          expiresAt: token.expiresAt,
         },
         isStdApp,
       );
@@ -984,8 +999,11 @@ export async function listMcpApps(): Promise<McpApp[]> {
   return getMcpAppsService().listMcpApps();
 }
 
-export async function addApp(name: string): Promise<McpAppsManagerResult> {
-  return getMcpAppsService().addApp(name);
+export async function addApp(
+  name: string,
+  options?: CreateAppOptions,
+): Promise<McpAppsManagerResult> {
+  return getMcpAppsService().addApp(name, options);
 }
 
 export async function updateAppServerAccess(

@@ -23,13 +23,12 @@ const LogViewer: React.FC<LogViewerProps> = ({ heatmapDays = 30 }) => {
   const [selectedDate, setSelectedDate] = useState<string>(getTodayString());
   const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
 
-  const { heatmapData, wordCloudData, activityItems, loading } = useActivityData(
-    {
+  const { heatmapData, wordCloudData, activityItems, loading } =
+    useActivityData({
       heatmapDays,
       selectedDate,
       refreshTrigger,
-    },
-  );
+    });
 
   const handleRefresh = useCallback(() => {
     setRefreshTrigger((prev) => prev + 1);

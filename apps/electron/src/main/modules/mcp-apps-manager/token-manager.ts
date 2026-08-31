@@ -6,9 +6,8 @@ import {
   TokenValidationResult,
   TokenServerAccess,
   TokenToolAccess,
+  DEFAULT_TOKEN_TTL_SECONDS,
 } from "@mcp_router/shared";
-
-const DEFAULT_TOKEN_TTL_SECONDS = 30 * 24 * 60 * 60;
 
 /**
  * トークン管理機能を提供するクラス
@@ -19,7 +18,6 @@ export class TokenManager {
    */
   public generateToken(options: TokenGenerateOptions): Token {
     const now = Math.floor(Date.now() / 1000);
-    const ttl = options.expiresIn ?? DEFAULT_TOKEN_TTL_SECONDS;
     const clientId = options.clientId;
 
     // 同じクライアントIDのトークンが存在する場合は削除
@@ -41,10 +39,14 @@ export class TokenManager {
       id: "mcpr_" + randomBytes,
       clientId,
       issuedAt: now,
-      expiresAt: now + ttl,
       serverAccess: options.serverAccess || {},
       toolAccess: options.toolAccess ?? {},
     };
+
+    if (options.expiresIn !== null) {
+      const ttl = options.expiresIn ?? DEFAULT_TOKEN_TTL_SECONDS;
+      token.expiresAt = now + ttl;
+    }
 
     // トークンを永続化
     McpAppsManagerRepository.getInstance().saveToken(token);
@@ -61,6 +63,16 @@ export class TokenManager {
       return {
         isValid: false,
         error: "Token not found",
+      };
+    }
+
+    if (
+      typeof token.expiresAt === "number" &&
+      token.expiresAt <= Math.floor(Date.now() / 1000)
+    ) {
+      return {
+        isValid: false,
+        error: "Token expired",
       };
     }
 
@@ -107,6 +119,12 @@ export class TokenManager {
     if (!token) {
       return false;
     }
+    if (
+      typeof token.expiresAt === "number" &&
+      token.expiresAt <= Math.floor(Date.now() / 1000)
+    ) {
+      return false;
+    }
     return !!token.serverAccess?.[serverId];
   }
 
@@ -122,6 +140,12 @@ export class TokenManager {
   ): boolean {
     const token = McpAppsManagerRepository.getInstance().getToken(tokenId);
     if (!token) {
+      return false;
+    }
+    if (
+      typeof token.expiresAt === "number" &&
+      token.expiresAt <= Math.floor(Date.now() / 1000)
+    ) {
       return false;
     }
     if (!token.serverAccess?.[serverId]) {

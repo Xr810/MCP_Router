@@ -6,9 +6,11 @@ import {
   IconActivity,
   IconKey,
   IconDownload,
+  IconLock,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { useWorkspaceStore } from "@/renderer/stores";
+import { useAdminUiStore } from "@/renderer/stores/admin-store";
 import { usePlatformAPI } from "@/renderer/platform-api";
 import { JeLogo } from "@/renderer/components/brand/JeLogo";
 import {
@@ -37,6 +39,7 @@ const SidebarComponent: React.FC = () => {
   const isRemoteWorkspace = currentWorkspace?.type === "remote";
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const platformAPI = usePlatformAPI();
+  const setAdminStatus = useAdminUiStore((state) => state.setStatus);
 
   useEffect(() => {
     // Check if an update is available on mount
@@ -60,6 +63,15 @@ const SidebarComponent: React.FC = () => {
 
   const handleInstallUpdate = () => {
     platformAPI.packages.system.installUpdate();
+  };
+
+  const handleLockAdmin = async () => {
+    try {
+      const status = await platformAPI.admin.lock();
+      setAdminStatus(status);
+    } catch (error) {
+      console.error("Failed to lock admin session:", error);
+    }
   };
 
   return (
@@ -176,6 +188,17 @@ const SidebarComponent: React.FC = () => {
               </SidebarMenuButton>
             </SidebarMenuItem>
           )}
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              tooltip={t("admin.lock")}
+              onClick={handleLockAdmin}
+            >
+              <div className="flex items-center gap-3 py-5 px-3 w-full">
+                <IconLock className="h-6 w-6" />
+                <span className="text-base">{t("admin.lock")}</span>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild

@@ -17,10 +17,18 @@ interface TokenGenerateOptions {
   expiresIn?: number;
 }
 
+export interface CreateAppOptions {
+  /** Seconds until expiry. `null` means never expire. Omit for the 30-day default. */
+  expiresIn?: number | null;
+}
+
 export interface AppAPI {
   // App management
   list(): Promise<McpApp[]>;
-  create(appName: string): Promise<McpAppsManagerResult>;
+  create(
+    appName: string,
+    options?: CreateAppOptions,
+  ): Promise<McpAppsManagerResult>;
   delete(appName: string): Promise<boolean>;
   updateServerAccess(
     appName: string,

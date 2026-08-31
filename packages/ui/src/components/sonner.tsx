@@ -19,8 +19,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
         classNames: {
           toast:
             "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border group-[.toaster]:border-border group-[.toaster]:shadow-[0_8px_30px_rgba(35,31,32,0.08)] group-[.toaster]:rounded-lg group-[.toaster]:px-4 group-[.toaster]:py-3",
-          title: "group-[.toast]:text-sm group-[.toast]:font-semibold group-[.toast]:tracking-tight",
-          description: "group-[.toast]:text-xs group-[.toast]:text-muted-foreground",
+          title:
+            "group-[.toast]:text-sm group-[.toast]:font-semibold group-[.toast]:tracking-tight",
+          description:
+            "group-[.toast]:text-xs group-[.toast]:text-muted-foreground",
           success:
             "group-[.toaster]:border-l-4 group-[.toaster]:border-l-[#2563eb]",
           error:

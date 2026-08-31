@@ -7,7 +7,9 @@
 - CLI HTTP サーバーは既定で `127.0.0.1` のみに bind し、外部公開する場合は `--token` を必須化。
 - Remote MCP URL は `https`、FQDN、DNS 解決結果、リダイレクト先を検証し、localhost/private/reserved IP への接続を拒否。
 - MCP サーバー bearer token とデスクトップ認証 token は Electron `safeStorage` が利用可能な環境で暗号化保存。
-- 共有 token に `expiresAt` を保存しつつ、既存 MCP クライアント互換性のため認証・server access では期限切れ拒否しない。無効化は明示的な revoke / 再生成で行う。
+- 共有 token に `expiresAt` を保存する。新規キーは既定 30 日で失効し、`expiresAt` 未設定は永続。期限切れは HTTP `/mcp` と tools/list・tools/call で拒否する。
+- 既存キーは一度限り `expiresAt` をクリアし、再発行するまで永続扱いとする。
+- Electron UI はローカル管理者（argon2 ハッシュ）でロックする。HTTP ゲートウェイは UI ロック中も稼働する。
 - 新規サーバー追加や sync 時に、既存 token へサーバーアクセスを自動付与しない。
 - 新規 MCP キーはサーバ/ツールともデフォルト拒否。`toolAccess` 未設定の既存 token は従来どおり、許可サーバ上の全ツールを使える。
 - 権限 UI はサーバが停止中でも、最後に LIVE したときの `tools/list` キャッシュ（`cachedTools`）でツールを選択できる。実行時はサーバが稼働している必要がある。

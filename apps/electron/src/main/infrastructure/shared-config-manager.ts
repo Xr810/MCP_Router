@@ -11,6 +11,7 @@ import {
   TokenToolAccess,
   cloneTokenToolAccess,
   pruneTokenToolAccess,
+  DesktopAdminConfig,
 } from "@mcp_router/shared";
 import { SqliteManager } from "./database/sqlite-manager";
 
@@ -74,9 +75,13 @@ export class SharedConfigManager implements ISharedConfigManager {
               id: token.id,
               clientId: token.clientId || token.client_id,
               issuedAt: token.issuedAt || token.issued_at,
-              expiresAt: token.expiresAt || token.expires_at,
               serverAccess: {},
             };
+
+            const expiresAt = token.expiresAt || token.expires_at;
+            if (typeof expiresAt === "number") {
+              normalizedToken.expiresAt = expiresAt;
+            }
 
             // サーバーアクセス情報をマップに変換
             const serverAccessValue = token.serverAccess || {};
@@ -148,6 +153,33 @@ export class SharedConfigManager implements ISharedConfigManager {
     if (!fs.existsSync(this.configPath)) {
       await this.migrateFromDatabase("local-default");
     }
+    this.migrateLegacyTokenExpiry();
+  }
+
+  /**
+   * Existing keys stored expiresAt but never enforced it. Clear once so they stay valid.
+   */
+  private migrateLegacyTokenExpiry(): void {
+    if (this.config._meta?.legacyTokenExpiryCleared) {
+      return;
+    }
+    if (this.config.mcpApps?.tokens?.length) {
+      this.config.mcpApps.tokens = this.config.mcpApps.tokens.map((token) => {
+        const next = { ...token };
+        delete next.expiresAt;
+        return next;
+      });
+    }
+    if (!this.config._meta) {
+      this.config._meta = {
+        version: "1.0.0",
+        lastModified: new Date().toISOString(),
+        legacyTokenExpiryCleared: true,
+      };
+    } else {
+      this.config._meta.legacyTokenExpiryCleared = true;
+    }
+    this.saveConfig();
   }
 
   /**
@@ -201,9 +233,13 @@ export class SharedConfigManager implements ISharedConfigManager {
           id: row.id,
           clientId: row.client_id || row.clientId,
           issuedAt: row.issued_at || row.issuedAt,
-          expiresAt: row.expires_at || row.expiresAt,
           serverAccess: {},
         };
+
+        const expiresAt = row.expires_at || row.expiresAt;
+        if (typeof expiresAt === "number") {
+          token.expiresAt = expiresAt;
+        }
 
         // サーバーアクセス情報をマップに変換
         if (row.serverAccess) {
@@ -393,6 +429,27 @@ export class SharedConfigManager implements ISharedConfigManager {
         "[SharedConfigManager] Tokens synchronized with workspace servers",
       );
     }
+  }
+
+  getAdmin(): DesktopAdminConfig | undefined {
+    const admin = this.config.admin;
+    if (!admin?.passwordHash) {
+      return undefined;
+    }
+    return {
+      username: admin.username,
+      passwordHash: admin.passwordHash,
+      createdAt: admin.createdAt,
+    };
+  }
+
+  saveAdmin(admin: DesktopAdminConfig): void {
+    this.config.admin = {
+      username: admin.username,
+      passwordHash: admin.passwordHash,
+      createdAt: admin.createdAt,
+    };
+    this.saveConfig();
   }
 }
 

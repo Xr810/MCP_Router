@@ -6,6 +6,12 @@
 import { AppSettings } from "./settings-types";
 import { Token, TokenServerAccess, TokenToolAccess } from "./token-types";
 
+export interface DesktopAdminConfig {
+  username: string;
+  passwordHash: string;
+  createdAt: number;
+}
+
 /**
  * 共通設定ファイルの構造
  */
@@ -23,12 +29,18 @@ export interface SharedConfig {
   };
 
   /**
+   * Local desktop admin lock. Hash only; never send this object to the renderer.
+   */
+  admin?: DesktopAdminConfig;
+
+  /**
    * マイグレーション情報
    */
   _meta?: {
     version: string;
     migratedAt?: string;
     lastModified: string;
+    legacyTokenExpiryCleared?: boolean;
   };
 }
 
@@ -90,4 +102,8 @@ export interface ISharedConfigManager {
    * 存在しないサーバーIDのみ削除し、新規サーバーは明示的な許可まで追加しない
    */
   syncTokensWithWorkspaceServers(serverList: string[]): void;
+
+  getAdmin(): DesktopAdminConfig | undefined;
+
+  saveAdmin(admin: DesktopAdminConfig): void;
 }

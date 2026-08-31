@@ -48,12 +48,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
 
   if (variant === "switch-row") {
     return (
-      <div
-        className={
-          className ??
-          "flex items-center justify-between gap-4"
-        }
-      >
+      <div className={className ?? "flex items-center justify-between gap-4"}>
         <div className="space-y-0.5 min-w-0">
           <label className="text-sm font-medium text-foreground">
             {t("settings.theme")}
@@ -106,9 +101,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
       size="sm"
       onClick={toggle}
       className={className ?? "h-8 w-8 p-0"}
-      title={
-        isDark ? t("settings.themeLight") : t("settings.themeDark")
-      }
+      title={isDark ? t("settings.themeLight") : t("settings.themeDark")}
       aria-label={t("settings.theme")}
     >
       {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}

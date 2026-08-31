@@ -17,13 +17,7 @@ import {
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/renderer/utils/tailwind-utils";
-import {
-  AlertCircle,
-  Grid3X3,
-  List,
-  ChevronDown,
-  Trash2,
-} from "lucide-react";
+import { AlertCircle, Grid3X3, List, ChevronDown, Trash2 } from "lucide-react";
 import { hasUnsetRequiredParams } from "@/renderer/utils/server-validation-utils";
 import { toast } from "sonner";
 import {
@@ -275,7 +269,10 @@ const Home: React.FC = () => {
             })}
           </p>
         </div>
-        <Button asChild className="gap-2 shrink-0 bg-[#2563eb] hover:bg-[#1d4ed8] text-white border-0">
+        <Button
+          asChild
+          className="gap-2 shrink-0 bg-[#2563eb] hover:bg-[#1d4ed8] text-white border-0"
+        >
           <Link to="/servers/add">
             <IconPlus className="h-4 w-4" />
             {t("serverList.addServer")}
@@ -375,9 +372,7 @@ const Home: React.FC = () => {
             title="Export"
           >
             <IconUpload className="h-4 w-4" />
-            <span className="hidden md:inline text-xs font-medium">
-              Export
-            </span>
+            <span className="hidden md:inline text-xs font-medium">Export</span>
           </Button>
         </div>
       </div>
@@ -572,9 +567,7 @@ const Home: React.FC = () => {
                                       }
                                       title={
                                         hasUnsetRequiredParams(server)
-                                          ? t(
-                                              "serverList.requiredParamsNotSet",
-                                            )
+                                          ? t("serverList.requiredParamsNotSet")
                                           : undefined
                                       }
                                       onToggle={async (checked) => {

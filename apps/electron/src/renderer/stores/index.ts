@@ -7,6 +7,7 @@ export * from "./view-preferences-store";
 // Platform-dependent store factories
 export * from "./server-store";
 export * from "./auth-store";
+export * from "./admin-store";
 export * from "./project-store";
 export * from "./theme-store";
 

@@ -1,5 +1,6 @@
 import { ipcMain } from "electron";
 import { getSettingsService } from "@/main/modules/settings/settings.service";
+import { requireAdminSession } from "@/main/modules/admin/admin.service";
 
 export function setupSettingsHandlers(): void {
   ipcMain.handle("settings:get", () => {
@@ -14,6 +15,7 @@ export function setupSettingsHandlers(): void {
 
   ipcMain.handle("settings:save", (_, settings: any) => {
     try {
+      requireAdminSession();
       const settingsService = getSettingsService();
       return settingsService.saveSettings(settings);
     } catch (error) {

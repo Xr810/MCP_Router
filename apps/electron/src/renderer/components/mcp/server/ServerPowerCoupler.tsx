@@ -105,7 +105,9 @@ export const ServerPowerCoupler: React.FC<ServerPowerCouplerProps> = ({
       <span
         className={cn(
           "relative z-[1] w-full px-2 text-[10px] font-semibold tracking-[0.14em] transition-colors duration-300",
-          isLive ? "pr-6 text-left text-[#1e40af] dark:text-[#2563eb]" : "pl-6 text-right",
+          isLive
+            ? "pr-6 text-left text-[#1e40af] dark:text-[#2563eb]"
+            : "pl-6 text-right",
           isError && !isLive && "text-destructive",
           isBusy && "text-amber-700 dark:text-amber-400",
           !isLive && !isError && !isBusy && "text-muted-foreground",

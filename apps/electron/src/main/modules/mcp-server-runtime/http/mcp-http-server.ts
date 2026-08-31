@@ -269,9 +269,7 @@ export class MCPHttpServer {
 
     const raw = Array.isArray(tokenHeader) ? tokenHeader[0] : tokenHeader;
     const tokenValue =
-      typeof raw === "string"
-        ? raw.replace(/^Bearer\s+/i, "").trim()
-        : raw;
+      typeof raw === "string" ? raw.replace(/^Bearer\s+/i, "").trim() : raw;
 
     if (payload.params && typeof payload.params === "object") {
       payload.params = {

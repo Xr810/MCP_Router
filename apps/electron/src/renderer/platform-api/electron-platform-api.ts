@@ -4,6 +4,7 @@
 
 import type { PlatformAPI } from "@mcp_router/shared";
 import type {
+  AdminAPI,
   AuthAPI,
   ServerAPI,
   AppAPI,
@@ -20,6 +21,7 @@ import type {
 
 // Electron implementation of the Platform API
 class ElectronPlatformAPI implements PlatformAPI {
+  admin: AdminAPI;
   auth: AuthAPI;
   servers: ServerAPI;
   apps: AppAPI;
@@ -33,6 +35,17 @@ class ElectronPlatformAPI implements PlatformAPI {
   skills: SkillsAPI;
 
   constructor() {
+    this.admin = {
+      getStatus: () => window.electronAPI.getAdminStatus(),
+      setup: (username, password) =>
+        window.electronAPI.setupAdmin(username, password),
+      unlock: (username, password) =>
+        window.electronAPI.unlockAdmin(username, password),
+      lock: () => window.electronAPI.lockAdmin(),
+      changePassword: (currentPassword, nextPassword) =>
+        window.electronAPI.changeAdminPassword(currentPassword, nextPassword),
+    };
+
     // Initialize auth domain
     this.auth = {
       signIn: (provider) => window.electronAPI.login(provider),
@@ -83,7 +96,8 @@ class ElectronPlatformAPI implements PlatformAPI {
     // Initialize apps domain (with token management)
     this.apps = {
       list: () => window.electronAPI.listMcpApps(),
-      create: (appName) => window.electronAPI.addMcpAppConfig(appName),
+      create: (appName, options) =>
+        window.electronAPI.addMcpAppConfig(appName, options),
       delete: (appName) => window.electronAPI.deleteMcpApp(appName),
       updateServerAccess: (appName, serverAccess, toolAccess) =>
         window.electronAPI.updateAppServerAccess(

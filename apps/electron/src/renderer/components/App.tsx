@@ -11,7 +11,9 @@ import McpAppsManager from "@/renderer/components/mcp/apps/McpAppsManager";
 import LogViewer from "@/renderer/components/mcp/log/LogViewer";
 import Settings from "./setting/Settings";
 import LoginPage from "./auth/LoginPage";
+import { AdminLockScreen } from "./auth/AdminLockScreen";
 import { useServerStore, useAuthStore, initializeStores } from "../stores";
+import { useAdminUiStore } from "../stores/admin-store";
 import { usePlatformAPI } from "@/renderer/platform-api";
 import { IconProgress } from "@tabler/icons-react";
 import { postHogService } from "../services/posthog-service";
@@ -30,14 +32,47 @@ const App: React.FC = () => {
   const { refreshServers } = useServerStore();
 
   const { checkAuthStatus, subscribeToAuthChanges } = useAuthStore();
+  const adminStatus = useAdminUiStore((state) => state.status);
+  const setAdminStatus = useAdminUiStore((state) => state.setStatus);
 
   // Local state for loading and temporary UI states
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [adminChecked, setAdminChecked] = useState<boolean>(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadAdminStatus = async () => {
+      try {
+        const status = await platformAPI.admin.getStatus();
+        if (!cancelled) {
+          setAdminStatus(status);
+        }
+      } catch (error) {
+        console.error("Failed to load admin status:", error);
+      } finally {
+        if (!cancelled) {
+          setAdminChecked(true);
+        }
+      }
+    };
+    void loadAdminStatus();
+    return () => {
+      cancelled = true;
+    };
+  }, [platformAPI, setAdminStatus]);
+
+  const adminUnlocked = !!adminStatus?.configured && !!adminStatus.unlocked;
 
   // Initialize stores
   useEffect(() => {
+    if (!adminUnlocked) {
+      setIsLoading(false);
+      return;
+    }
+
     const initializeApp = async () => {
       try {
+        setIsLoading(true);
         // Initialize all stores
         await initializeStores();
 
@@ -58,10 +93,13 @@ const App: React.FC = () => {
     };
 
     initializeApp();
-  }, [checkAuthStatus, platformAPI]);
+  }, [adminUnlocked, checkAuthStatus, platformAPI]);
 
   // Subscribe to authentication changes
   useEffect(() => {
+    if (!adminUnlocked) {
+      return;
+    }
     const unsubscribe = subscribeToAuthChanges();
 
     // Also subscribe to auth changes for PostHog
@@ -77,18 +115,7 @@ const App: React.FC = () => {
       unsubscribe();
       authUnsubscribe();
     };
-  }, [subscribeToAuthChanges, platformAPI]);
-
-  // Subscribe to protocol URL events
-  useEffect(() => {
-    const unsubscribe = platformAPI.packages.system.onProtocolUrl((url) => {
-      handleProtocolUrl(url);
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, []);
+  }, [adminUnlocked, subscribeToAuthChanges, platformAPI]);
 
   // Handle protocol URL processing
   const handleProtocolUrl = useCallback(
@@ -108,22 +135,42 @@ const App: React.FC = () => {
         console.error("Failed to process protocol URL:", error);
       }
     },
-    [navigate],
+    [navigate, platformAPI],
   );
+
+  // Subscribe to protocol URL events
+  useEffect(() => {
+    if (!adminUnlocked) {
+      return;
+    }
+    const unsubscribe = platformAPI.packages.system.onProtocolUrl((url) => {
+      handleProtocolUrl(url);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [adminUnlocked, handleProtocolUrl, platformAPI]);
 
   // Refresh servers on initial load only
   useEffect(() => {
+    if (!adminUnlocked) {
+      return;
+    }
     refreshServers();
-  }, [refreshServers]);
+  }, [adminUnlocked, refreshServers]);
 
   // Simple polling: refresh server list every 3 seconds
   useEffect(() => {
+    if (!adminUnlocked) {
+      return;
+    }
     const id = setInterval(() => {
       // Ignore errors to keep polling resilient
       refreshServers().catch(() => {});
     }, 3000);
     return () => clearInterval(id);
-  }, [refreshServers]);
+  }, [adminUnlocked, refreshServers]);
 
   // Loading indicator component to reuse
   const LoadingIndicator = () => (
@@ -135,9 +182,45 @@ const App: React.FC = () => {
     </div>
   );
 
+  if (!adminChecked) {
+    return (
+      <>
+        <Sonner />
+        <LoadingIndicator />
+      </>
+    );
+  }
+
+  if (!adminStatus?.configured) {
+    return (
+      <>
+        <Sonner />
+        <AdminLockScreen mode="setup" onUnlocked={setAdminStatus} />
+      </>
+    );
+  }
+
+  if (!adminStatus.unlocked) {
+    return (
+      <>
+        <Sonner />
+        <AdminLockScreen
+          mode="unlock"
+          username={adminStatus.username}
+          onUnlocked={setAdminStatus}
+        />
+      </>
+    );
+  }
+
   // If still loading, show loading indicator
   if (isLoading) {
-    return <LoadingIndicator />;
+    return (
+      <>
+        <Sonner />
+        <LoadingIndicator />
+      </>
+    );
   }
 
   // Login is now optional - user can access app without authentication

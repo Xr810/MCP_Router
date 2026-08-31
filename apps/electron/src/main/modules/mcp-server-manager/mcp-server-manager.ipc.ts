@@ -2,28 +2,33 @@ import { ipcMain, dialog, BrowserWindow } from "electron";
 import { MCPServerConfig, CreateServerInput } from "@mcp_router/shared";
 import { processDxtFile } from "@/main/modules/mcp-server-manager/dxt-processor/dxt-processor";
 import type { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
+import { requireAdminSession } from "@/main/modules/admin/admin.service";
 
 export function setupMcpServerHandlers(
   getMCPServerManager: () => MCPServerManager,
 ): void {
   ipcMain.handle("mcp:list", () => {
+    requireAdminSession();
     const mcpServerManager = getMCPServerManager();
     return mcpServerManager.getServers();
   });
 
   ipcMain.handle("mcp:start", async (_, id: string) => {
+    requireAdminSession();
     const mcpServerManager = getMCPServerManager();
     const result = await mcpServerManager.startServer(id, "MCP Router UI");
     return result;
   });
 
   ipcMain.handle("mcp:stop", (_, id: string) => {
+    requireAdminSession();
     const mcpServerManager = getMCPServerManager();
     const result = mcpServerManager.stopServer(id, "MCP Router UI");
     return result;
   });
 
   ipcMain.handle("mcp:add", async (_, input: CreateServerInput) => {
+    requireAdminSession();
     const mcpServerManager = getMCPServerManager();
     let server = null;
 
@@ -60,6 +65,7 @@ export function setupMcpServerHandlers(
   });
 
   ipcMain.handle("mcp:remove", (_, id: string) => {
+    requireAdminSession();
     const mcpServerManager = getMCPServerManager();
     const result = mcpServerManager.removeServer(id);
     return result;
@@ -68,6 +74,7 @@ export function setupMcpServerHandlers(
   ipcMain.handle(
     "mcp:update-config",
     (_, id: string, config: Partial<MCPServerConfig>) => {
+      requireAdminSession();
       const mcpServerManager = getMCPServerManager();
       const result = mcpServerManager.updateServer(id, config);
       return result;
@@ -75,6 +82,7 @@ export function setupMcpServerHandlers(
   );
 
   ipcMain.handle("mcp:list-tools", async (_, id: string) => {
+    requireAdminSession();
     const mcpServerManager = getMCPServerManager();
     return await mcpServerManager.listServerTools(id);
   });
@@ -82,6 +90,7 @@ export function setupMcpServerHandlers(
   ipcMain.handle(
     "mcp:update-tool-permissions",
     (_, id: string, permissions: Record<string, boolean>) => {
+      requireAdminSession();
       const mcpServerManager = getMCPServerManager();
       return mcpServerManager.updateServerToolPermissions(id, permissions);
     },

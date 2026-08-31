@@ -191,9 +191,7 @@ export class AggregatorServer {
         });
         return;
       }
-      await this.httpSessions
-        .get(sessionId)!
-        .transport.handleRequest(req, res);
+      await this.httpSessions.get(sessionId)!.transport.handleRequest(req, res);
     } catch (error) {
       this.lastHttpError =
         error instanceof Error ? error.message : String(error);
@@ -223,9 +221,7 @@ export class AggregatorServer {
         });
         return;
       }
-      await this.httpSessions
-        .get(sessionId)!
-        .transport.handleRequest(req, res);
+      await this.httpSessions.get(sessionId)!.transport.handleRequest(req, res);
     } catch (error) {
       this.lastHttpError =
         error instanceof Error ? error.message : String(error);

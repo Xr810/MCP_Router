@@ -18,6 +18,9 @@ export * from "./ui";
 export * from "./database";
 // Export platform-api types except LogEntry to avoid conflict
 export {
+  // Admin API
+  AdminAPI,
+  AdminStatus,
   // Auth API
   AuthAPI,
   AuthStatus,
@@ -29,6 +32,7 @@ export {
   CreateServerInput,
   // App API
   AppAPI,
+  CreateAppOptions,
   // Package API
   PackageAPI,
   // Settings API

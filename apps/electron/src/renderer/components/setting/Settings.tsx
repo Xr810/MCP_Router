@@ -12,6 +12,7 @@ import { Switch } from "@mcp_router/ui";
 import { Input } from "@mcp_router/ui";
 import { toast } from "sonner";
 import { useAuthStore } from "../../stores";
+import { useAdminUiStore } from "../../stores/admin-store";
 import { IconCloud, IconLock } from "@tabler/icons-react";
 import { electronPlatformAPI as platformAPI } from "../../platform-api/electron-platform-api";
 import { postHogService } from "../../services/posthog-service";
@@ -36,10 +37,7 @@ const SettingRow: React.FC<{
   className?: string;
 }> = ({ label, description, children, className }) => (
   <div
-    className={cn(
-      "flex items-center justify-between gap-6 py-3.5",
-      className,
-    )}
+    className={cn("flex items-center justify-between gap-6 py-3.5", className)}
   >
     <div className="min-w-0 space-y-0.5 pr-4">
       <p className="text-sm font-medium text-foreground">{label}</p>
@@ -74,6 +72,14 @@ const Settings: React.FC = () => {
   const [isSettingPassphrase, setIsSettingPassphrase] = useState(false);
 
   const [gatewayRestartNeeded, setGatewayRestartNeeded] = useState(false);
+  const [currentAdminPassword, setCurrentAdminPassword] = useState("");
+  const [nextAdminPassword, setNextAdminPassword] = useState("");
+  const [confirmAdminPassword, setConfirmAdminPassword] = useState("");
+  const [isChangingAdminPassword, setIsChangingAdminPassword] = useState(false);
+  const [isLockingAdmin, setIsLockingAdmin] = useState(false);
+
+  const adminStatus = useAdminUiStore((state) => state.status);
+  const setAdminStatus = useAdminUiStore((state) => state.setStatus);
 
   const {
     isAuthenticated,
@@ -264,6 +270,46 @@ const Settings: React.FC = () => {
     }
   };
 
+  const handleLockAdmin = async () => {
+    setIsLockingAdmin(true);
+    try {
+      const status = await platformAPI.admin.lock();
+      setAdminStatus(status);
+    } catch (error) {
+      console.error("Failed to lock admin session:", error);
+      toast.error(t("admin.lockFailed"));
+    } finally {
+      setIsLockingAdmin(false);
+    }
+  };
+
+  const handleChangeAdminPassword = async () => {
+    if (nextAdminPassword !== confirmAdminPassword) {
+      toast.error(t("admin.passwordMismatch"));
+      return;
+    }
+    setIsChangingAdminPassword(true);
+    try {
+      const status = await platformAPI.admin.changePassword(
+        currentAdminPassword,
+        nextAdminPassword,
+      );
+      setAdminStatus(status);
+      setCurrentAdminPassword("");
+      setNextAdminPassword("");
+      setConfirmAdminPassword("");
+      toast.success(t("admin.passwordChanged"));
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : t("admin.passwordChangeFailed"),
+      );
+    } finally {
+      setIsChangingAdminPassword(false);
+    }
+  };
+
   const handleCloudSyncToggle = async (checked: boolean) => {
     if (!cloudSyncStatus) return;
     try {
@@ -308,6 +354,71 @@ const Settings: React.FC = () => {
           {t("settings.pageDescription")}
         </p>
       </div>
+
+      <section className="space-y-3">
+        <SectionLabel>{t("admin.section")}</SectionLabel>
+        <div className="border-t border-border">
+          <SettingRow
+            label={t("admin.signedInAs")}
+            description={t("admin.sessionDescription")}
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">
+                {adminStatus?.username || "admin"}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9"
+                onClick={handleLockAdmin}
+                disabled={isLockingAdmin}
+              >
+                {t("admin.lock")}
+              </Button>
+            </div>
+          </SettingRow>
+          <div className="py-3.5 space-y-3">
+            <p className="text-sm font-medium">{t("admin.changePassword")}</p>
+            <div className="grid gap-2 max-w-md">
+              <Input
+                type="password"
+                value={currentAdminPassword}
+                onChange={(e) => setCurrentAdminPassword(e.target.value)}
+                placeholder={t("admin.currentPassword")}
+                className={fieldClass}
+              />
+              <Input
+                type="password"
+                value={nextAdminPassword}
+                onChange={(e) => setNextAdminPassword(e.target.value)}
+                placeholder={t("admin.newPassword")}
+                className={fieldClass}
+              />
+              <Input
+                type="password"
+                value={confirmAdminPassword}
+                onChange={(e) => setConfirmAdminPassword(e.target.value)}
+                placeholder={t("admin.confirmPassword")}
+                className={fieldClass}
+              />
+              <div>
+                <Button
+                  size="sm"
+                  className="h-9 bg-[#2563eb] hover:bg-[#1d4ed8] text-white border-0"
+                  onClick={handleChangeAdminPassword}
+                  disabled={
+                    isChangingAdminPassword ||
+                    !currentAdminPassword ||
+                    !nextAdminPassword
+                  }
+                >
+                  {t("admin.savePassword")}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {isAuthenticated && (
         <section className="space-y-3">

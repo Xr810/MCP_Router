@@ -29,8 +29,14 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@mcp_router/ui";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@mcp_router/ui";
 import { ChevronDown } from "lucide-react";
-
 import {
   McpApp,
   McpAppsManagerResult,
@@ -38,6 +44,7 @@ import {
   TokenServerAccess,
   TokenToolAccess,
   cloneTokenToolAccess,
+  TOKEN_TTL_SECONDS,
 } from "@mcp_router/shared";
 import {
   UNASSIGNED_PROJECT_ID,
@@ -50,6 +57,8 @@ const McpAppsManager: React.FC = () => {
   const [apps, setApps] = useState<McpApp[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [customAppName, setCustomAppName] = useState<string>("");
+  const [expiryPreset, setExpiryPreset] = useState<string>("30d");
+  const [customExpiryDays, setCustomExpiryDays] = useState<string>("14");
   const [servers, setServers] = useState<any[]>([]);
   const [selectedApp, setSelectedApp] = useState<McpApp | null>(null);
   const [selectedServerAccess, setSelectedServerAccess] =
@@ -351,6 +360,41 @@ const McpAppsManager: React.FC = () => {
     }
   };
 
+  const resolveExpiresIn = (): number | null | undefined => {
+    switch (expiryPreset) {
+      case "1d":
+        return TOKEN_TTL_SECONDS.oneDay;
+      case "7d":
+        return TOKEN_TTL_SECONDS.oneWeek;
+      case "30d":
+        return TOKEN_TTL_SECONDS.thirtyDays;
+      case "90d":
+        return TOKEN_TTL_SECONDS.ninetyDays;
+      case "never":
+        return null;
+      case "custom": {
+        const days = Number(customExpiryDays);
+        if (!Number.isInteger(days) || days < 1) {
+          return undefined;
+        }
+        return days * TOKEN_TTL_SECONDS.oneDay;
+      }
+      default:
+        return TOKEN_TTL_SECONDS.thirtyDays;
+    }
+  };
+
+  const formatExpiry = (expiresAt?: number) => {
+    if (typeof expiresAt !== "number") {
+      return t("mcpApps.neverExpires");
+    }
+    const now = Math.floor(Date.now() / 1000);
+    if (expiresAt <= now) {
+      return t("mcpApps.expired");
+    }
+    return new Date(expiresAt * 1000).toLocaleString();
+  };
+
   // カスタムアプリの追加処理
   const handleAddCustomApp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -360,8 +404,16 @@ const McpAppsManager: React.FC = () => {
       return;
     }
 
+    const expiresIn = resolveExpiresIn();
+    if (expiresIn === undefined) {
+      toast.error(t("mcpApps.invalidCustomExpiry"));
+      return;
+    }
+
     try {
-      const result = await platformAPI.apps.create(customAppName);
+      const result = await platformAPI.apps.create(customAppName, {
+        expiresIn,
+      });
 
       if (result.success && result.app) {
         setApps((prevApps) => [...prevApps, result.app!]);
@@ -563,6 +615,37 @@ const McpAppsManager: React.FC = () => {
               className="h-10"
             />
           </div>
+          <div className="w-[160px]">
+            <Select value={expiryPreset} onValueChange={setExpiryPreset}>
+              <SelectTrigger className="h-10">
+                <SelectValue placeholder={t("mcpApps.expiry")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1d">{t("mcpApps.expiry1d")}</SelectItem>
+                <SelectItem value="7d">{t("mcpApps.expiry7d")}</SelectItem>
+                <SelectItem value="30d">{t("mcpApps.expiry30d")}</SelectItem>
+                <SelectItem value="90d">{t("mcpApps.expiry90d")}</SelectItem>
+                <SelectItem value="custom">
+                  {t("mcpApps.expiryCustom")}
+                </SelectItem>
+                <SelectItem value="never">
+                  {t("mcpApps.expiryNever")}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {expiryPreset === "custom" ? (
+            <div className="w-[110px]">
+              <Input
+                type="number"
+                min={1}
+                value={customExpiryDays}
+                onChange={(e) => setCustomExpiryDays(e.target.value)}
+                placeholder={t("mcpApps.expiryDays")}
+                className="h-10"
+              />
+            </div>
+          ) : null}
           <Button
             type="submit"
             className="h-10 bg-[#2563eb] hover:bg-[#1d4ed8] text-white border-0"
@@ -598,6 +681,7 @@ const McpAppsManager: React.FC = () => {
                     <TableHead>{t("mcpApps.columnName")}</TableHead>
                     <TableHead>{t("mcpApps.columnToken")}</TableHead>
                     <TableHead>{t("mcpApps.columnAccess")}</TableHead>
+                    <TableHead>{t("mcpApps.columnExpiry")}</TableHead>
                     <TableHead className="text-right">
                       {t("mcpApps.columnActions")}
                     </TableHead>
@@ -643,6 +727,9 @@ const McpAppsManager: React.FC = () => {
                         </TableCell>
                         <TableCell className="text-muted-foreground text-sm">
                           {describeAccess(app)}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
+                          {formatExpiry(app.expiresAt)}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex gap-2 justify-end flex-wrap">
