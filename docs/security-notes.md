@@ -1,3 +1,18 @@
+# Security hardening notes
+
+> **This is not the security policy.** To report a vulnerability, see
+> [`SECURITY.md`](../SECURITY.md) in the repository root.
+>
+> This is a working record of security hardening — what was found and what was
+> changed. It is upstream's document, written in Japanese by the upstream
+> author, and kept in the original language so it stays comparable with
+> upstream. This fork appended to it in the same language.
+>
+> What this fork's own access-control work does is described in English under
+> "Scope of this fork's security work" in [`SECURITY.md`](../SECURITY.md).
+
+---
+
 # 検出事項の詳細
 
 ## 2026-06-24 セキュリティ底上げPRの対応範囲
