@@ -55,14 +55,13 @@ git push origin v1.0.0
 The release is drafted, not published — review the assets, then publish it by
 hand.
 
-**Fallback — a CI artifact.** For an unreleased commit, the **Windows Azure
-Package** workflow (`.github/workflows/windows-azure-package.yml`) builds on
-every push to `main`, or on demand via **Actions → Windows Azure Package → Run
-workflow**. It produces the artifact `mcp-router-windows-x64`.
+**Fallback — a CI artifact.** For an unreleased commit, the **Make Build**
+workflow (`.github/workflows/make.yml`) builds on every push to `main`, or on
+demand via **Actions → Make Build → Run workflow**. It produces one artifact per
+platform: `make-Windows` and `make-macOS`.
 
 Two limits make this the fallback rather than the default: Actions artifacts
-require a signed-in GitHub account to download, and this one is deleted after
-14 days (`retention-days: 14`).
+require a signed-in GitHub account to download, and they expire.
 
 Either way the build happens on a GitHub-hosted runner, which has more RAM
 than a small VM.
@@ -73,7 +72,7 @@ For a release asset, download it directly on the VM, or copy it across and
 extract. For a CI artifact, with the GitHub CLI:
 
 ```powershell
-gh run download --repo OWNER/REPO -n mcp-router-windows-x64 -D C:\Users\USER\mcp-router-build
+gh run download --repo OWNER/REPO -n make-Windows -D C:\Users\USER\mcp-router-build
 ```
 
 ### 3) Install and run
