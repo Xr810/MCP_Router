@@ -174,7 +174,11 @@
     "mcpGatewayPublicUrlPlaceholder": "",
     "mcpGatewayPublicUrlDescription": "",
     "remoteMcpRestartRequired": "保存しました。ホスト/ポート変更を反映するには MCP Router を再起動してください。",
-    "remoteMcpSaved": "リモート MCP 設定を保存しました"
+    "remoteMcpSaved": "リモート MCP 設定を保存しました",
+    "about": "このアプリについて",
+    "aboutModified": "これは MCP Router を改変したビルドです。",
+    "aboutUpstream": "fjm2u 氏による MCP Router を基にしています。このフォークではキー単位のサーバー/ツール権限、有効期限付き Bearer キー、デスクトップ管理者ロック、設定可能なブランディング層を追加しています。上流の作者とは無関係であり、承認も受けていません。",
+    "aboutLicense": "上流と同じ Sustainable Use License で配布されています。本アプリに同梱の LICENSE.md および NOTICE を参照してください。"
   },
   "mcpApps": {
     "title": "キー",

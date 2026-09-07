@@ -683,6 +683,28 @@ const Settings: React.FC = () => {
           </SettingRow>
         </div>
       </section>
+
+      {/* About — the Sustainable Use License requires modified copies to carry
+          a prominent notice that they have been modified. */}
+      <section className="space-y-3 w-full">
+        <SectionLabel>{t("settings.about")}</SectionLabel>
+        <div className="border-t border-border divide-y divide-border">
+          <div className="py-3.5 space-y-2">
+            <p className="text-sm font-medium text-foreground">
+              {t("settings.aboutModified")}
+            </p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {t("settings.aboutUpstream")}
+            </p>
+            <p className="text-xs text-muted-foreground font-mono select-text">
+              https://github.com/mcp-router/mcp-router
+            </p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {t("settings.aboutLicense")}
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

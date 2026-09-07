@@ -184,7 +184,11 @@
     "remoteMcpSaved": "Enterprise Gateway settings saved",
     "remoteMcpSaveFailed": "Failed to save gateway settings",
     "restartNow": "Restart now",
-    "restartFailed": "Failed to restart the app"
+    "restartFailed": "Failed to restart the app",
+    "about": "About",
+    "aboutModified": "This is a modified build of MCP Router.",
+    "aboutUpstream": "Based on the MCP Router project by fjm2u. This fork adds per-key server and tool permissions, expiring Bearer keys, a desktop admin lock, and a configurable branding layer. It is not affiliated with or endorsed by the upstream authors.",
+    "aboutLicense": "Distributed under the Sustainable Use License, the same terms as upstream. See LICENSE.md and NOTICE, included with this application."
   },
   "mcpApps": {
     "title": "Keys",

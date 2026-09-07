@@ -31,6 +31,10 @@ const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
     icon: "./public/images/icon/icon",
+    // The Sustainable Use License requires that anyone who receives a copy of
+    // the software also receives the terms, and that modified copies carry a
+    // notice saying so. Ship both next to the binary.
+    extraResource: ["../../LICENSE.md", "../../NOTICE"],
     // Support both Intel and Apple Silicon architectures - use target arch from env
     arch: (process.env.npm_config_target_arch as any) || process.arch,
     // Only sign/notarize on macOS when credentials are available (CI-safe)
@@ -104,8 +108,8 @@ const config: ForgeConfig = {
       config: {
         authToken: process.env.GITHUB_TOKEN,
         repository: {
-          owner: "meghamshb2006",
-          name: "mcprouter",
+          owner: "Xr810",
+          name: "MCP_Router",
         },
         prerelease: true,
         draft: true,

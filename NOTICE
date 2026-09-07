@@ -1,0 +1,45 @@
+MCP Router — access-controlled fork
+===================================
+
+This software is a MODIFIED version of MCP Router.
+
+    Upstream project:  MCP Router, by fjm2u
+                       https://github.com/mcp-router/mcp-router
+
+This fork is not affiliated with, endorsed by, or supported by the upstream
+authors. Please do not report problems with this build to the upstream project.
+
+
+Modifications in this fork
+--------------------------
+
+  - Per-key permissions on individual MCP servers and on individual tools
+  - Cached tool lists, so permissions can be granted against a server that is
+    currently powered off
+  - Expiring Bearer keys, with a default lifetime of 30 days
+  - A desktop administrator lock for the Electron window, which does not stop
+    the HTTP gateway
+  - A configurable white-label branding layer (see docs/BRANDING.md)
+
+Everything else is upstream's work. The commit history preserves authorship
+for every contributor.
+
+
+License
+-------
+
+This software is distributed under the Sustainable Use License — the same terms
+as the upstream project. The full text is in LICENSE.md, distributed alongside
+this file.
+
+The following is a summary for orientation only. It does not replace, qualify,
+or reinterpret the terms in LICENSE.md, which govern:
+
+  - You may use and modify the software for your own internal business
+    purposes, or for non-commercial or personal use.
+  - You may distribute it to others only free of charge and only for
+    non-commercial purposes.
+  - Anyone who receives a copy from you must also receive these terms.
+  - Modified copies must carry a prominent notice that they were modified.
+  - Licensor notices must not be altered, removed, or obscured. The upstream
+    attribution is deliberately outside the branding layer for this reason.

@@ -89,16 +89,25 @@ with or endorsed by the upstream authors.
 
 ## Run it
 
+Packaged builds for macOS and Windows are on the **Releases** page. They carry
+`LICENSE.md` and `NOTICE` as attachments; the macOS build is unsigned unless signing
+credentials were configured for the run.
+
+To run from source:
+
 ```bash
 pnpm install
 pnpm dev
 ```
 
-Package a desktop build:
+Package a desktop build yourself:
 
 ```bash
 pnpm --filter @mcp_router/electron make
 ```
+
+Cut a release by pushing a tag — `.github/workflows/release.yml` builds both platforms and
+drafts a release for you to review and publish.
 
 Clients connect over HTTP:
 
@@ -109,12 +118,25 @@ Authorization: Bearer <key issued in the Keys panel>
 
 Local clients on the same machine can still use localhost directly.
 
-For deploying the gateway on a remote VM — including building the installer in CI when the
-VM is too small to run a webpack build — see [`docs/REMOTE_DEPLOYMENT.md`](docs/REMOTE_DEPLOYMENT.md).
+For deploying the gateway on a remote VM — including getting a packaged build onto a
+machine too small to run a webpack build — see
+[`docs/REMOTE_DEPLOYMENT.md`](docs/REMOTE_DEPLOYMENT.md).
 
 ---
 
 ## Licence
 
-Upstream licence applies; see `LICENSE.md`. Additions in this fork are released under the
+Upstream's licence applies; see `LICENSE.md`. Additions in this fork are released under the
 same terms.
+
+That licence is the **Sustainable Use License**, which is not an open-source licence. In
+short — `LICENSE.md` governs, not this summary:
+
+- Use and modify it for your own internal business purposes, or for non-commercial or
+  personal use.
+- Distribute it to others only free of charge and for non-commercial purposes.
+- Pass the terms on to anyone who gets a copy from you.
+- Modified copies must say prominently that they were modified.
+
+This is a modified copy. `NOTICE` records what was changed, and ships inside the packaged
+application alongside `LICENSE.md`.

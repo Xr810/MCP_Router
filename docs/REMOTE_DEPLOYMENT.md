@@ -35,23 +35,42 @@ MCP Router (Electron, on the VM)
 ## Deploy on a small VM (4 GB) — recommended
 
 Do **not** run `pnpm dev` on a 4 GB VM: the webpack build runs out of memory.
-Build the Windows installer in CI, then install and run the packaged app on the
-VM.
+Get a packaged build instead and run that on the VM.
 
-### 1) Build in CI
+### 1) Get a build
 
-Workflow: **Windows Azure Package** (`.github/workflows/windows-azure-package.yml`)
+**Preferred — a release.** Download the Windows installer from the repository's
+**Releases** page. Releases are permanent, need no login, and carry `LICENSE.md`
+and `NOTICE` as attachments.
 
-- Runs on push to `main`, or manually via **Actions → Windows Azure Package →
-  Run workflow**
-- Artifact name: `mcp-router-windows-x64`
+Releases are cut by pushing a tag, which runs
+`.github/workflows/release.yml` and drafts a release with builds for macOS and
+Windows:
 
-The workflow runs on a GitHub-hosted runner, which has more RAM than a small VM.
+```bash
+git tag v0.6.3
+git push origin v0.6.3
+```
 
-### 2) Download onto the VM
+The release is drafted, not published — review the assets, then publish it by
+hand.
 
-From the CI run → **Artifacts** → download `mcp-router-windows-x64` → copy the
-ZIP to the VM → extract. Or, with the GitHub CLI on the VM:
+**Fallback — a CI artifact.** For an unreleased commit, the **Windows Azure
+Package** workflow (`.github/workflows/windows-azure-package.yml`) builds on
+every push to `main`, or on demand via **Actions → Windows Azure Package → Run
+workflow**. It produces the artifact `mcp-router-windows-x64`.
+
+Two limits make this the fallback rather than the default: Actions artifacts
+require a signed-in GitHub account to download, and this one is deleted after
+14 days (`retention-days: 14`).
+
+Either way the build happens on a GitHub-hosted runner, which has more RAM
+than a small VM.
+
+### 2) Copy it onto the VM
+
+For a release asset, download it directly on the VM, or copy it across and
+extract. For a CI artifact, with the GitHub CLI:
 
 ```powershell
 gh run download --repo OWNER/REPO -n mcp-router-windows-x64 -D C:\Users\USER\mcp-router-build

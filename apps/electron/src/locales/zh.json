@@ -142,7 +142,11 @@
     "mcpGatewayPublicUrlPlaceholder": "",
     "mcpGatewayPublicUrlDescription": "",
     "remoteMcpRestartRequired": "已保存。主机/端口更改需重启 MCP Router 后生效。",
-    "remoteMcpSaved": "远程 MCP 设置已保存"
+    "remoteMcpSaved": "远程 MCP 设置已保存",
+    "about": "关于",
+    "aboutModified": "这是 MCP Router 的修改版构建。",
+    "aboutUpstream": "基于 fjm2u 的 MCP Router 项目。本 fork 增加了按密钥的服务器与工具权限、可过期的 Bearer 密钥、桌面管理员锁,以及可配置的品牌层。与上游作者无隶属关系,也未获其背书。",
+    "aboutLicense": "以与上游相同的 Sustainable Use License 分发。请参阅随本应用一同提供的 LICENSE.md 与 NOTICE。"
   },
   "mcpApps": {
     "title": "密钥",
