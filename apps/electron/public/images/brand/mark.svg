@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <style>
+      .b-fg { fill: #1f2937; }
+      .b-accent { fill: #2563eb; }
+      .b-link { fill: none; stroke: #1f2937; stroke-width: 3.4; stroke-linecap: round; }
+    </style>
+  </defs>
+  <!-- Mark: one hub fanning out to three routed endpoints. -->
+  <circle class="b-accent" cx="16" cy="32" r="7.5" />
+  <path class="b-link" d="M23.5 32 H31 L38 14 H42" />
+  <path class="b-link" d="M23.5 32 H42" />
+  <path class="b-link" d="M23.5 32 H31 L38 50 H42" />
+  <rect class="b-fg" x="42" y="8" width="13" height="13" rx="3" />
+  <rect class="b-fg" x="42" y="25.5" width="13" height="13" rx="3" />
+  <rect class="b-fg" x="42" y="43" width="13" height="13" rx="3" />
+</svg>

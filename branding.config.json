@@ -1,0 +1,11 @@
+{
+  "appName": "MCP Router",
+  "windowTitle": "MCP Router",
+  "footer": "",
+  "logo": "public/images/brand/logo.svg",
+  "mark": "public/images/brand/mark.svg",
+  "colors": {
+    "accent": "#2563eb",
+    "foreground": "#1f2937"
+  }
+}

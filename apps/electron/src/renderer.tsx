@@ -1,10 +1,14 @@
 import "@mcp_router/tailwind-config/base.css";
+import { applyBranding } from "@/renderer/utils/apply-branding";
 import "./renderer/utils/i18n"; // Import i18n initialization first
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "@/renderer/components/App";
 import { HashRouter } from "react-router-dom";
 import { TitleBar } from "@/renderer/components/TitleBar";
+
+// Theme tokens follow branding.config.json; see docs/BRANDING.md.
+applyBranding();
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement,

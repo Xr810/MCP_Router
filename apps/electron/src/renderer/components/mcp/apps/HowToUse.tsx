@@ -95,7 +95,7 @@ const HowToUse = forwardRef<HowToUseHandle, HowToUseProps>(({ token }, ref) => {
                   Using localhost — set Client endpoint URL in{" "}
                   <Link
                     to="/settings"
-                    className="text-[#2563eb] hover:underline font-medium"
+                    className="text-primary hover:underline font-medium"
                     onClick={() => setIsDialogOpen(false)}
                   >
                     Settings

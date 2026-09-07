@@ -13,7 +13,7 @@ type CodeSnippetProps = {
 };
 
 /**
- * JE-styled copyable code block for Client setup.
+ * Copyable code block for Client setup.
  */
 export const CodeSnippet: React.FC<CodeSnippetProps> = ({
   code,
@@ -54,7 +54,7 @@ export const CodeSnippet: React.FC<CodeSnippetProps> = ({
         >
           {copied ? (
             <>
-              <Check className="h-3 w-3 text-[#2563eb]" />
+              <Check className="h-3 w-3 text-primary" />
               Copied
             </>
           ) : (

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50">
+  <defs>
+    <style>
+      .b-fg { fill: #1f2937; }
+      .b-accent { fill: #2563eb; }
+      .b-link { fill: none; stroke: #1f2937; stroke-width: 2.4; stroke-linecap: round; }
+    </style>
+  </defs>
+  <!-- Mark: one hub fanning out to three routed endpoints. -->
+  <circle class="b-accent" cx="11" cy="25" r="5.5" />
+  <path class="b-link" d="M16.5 25 H22 L28 11 H30" />
+  <path class="b-link" d="M16.5 25 H30" />
+  <path class="b-link" d="M16.5 25 H22 L28 39 H30" />
+  <rect class="b-fg" x="30" y="6.5" width="9" height="9" rx="2" />
+  <rect class="b-fg" x="30" y="20.5" width="9" height="9" rx="2" />
+  <rect class="b-fg" x="30" y="34.5" width="9" height="9" rx="2" />
+  <text class="b-fg" x="52" y="32"
+        font-family="Roboto, 'Helvetica Neue', Arial, sans-serif"
+        font-size="19" font-weight="600" letter-spacing="0.5">MCP Router</text>
+</svg>

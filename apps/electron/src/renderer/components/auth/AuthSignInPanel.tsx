@@ -1,7 +1,8 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@mcp_router/ui";
-import { JeLogo } from "@/renderer/components/brand/JeLogo";
+import { BrandLogo } from "@/renderer/components/brand/BrandLogo";
+import { branding } from "@/branding";
 import { Loader2 } from "lucide-react";
 
 type AuthSignInPanelProps = {
@@ -14,7 +15,7 @@ type AuthSignInPanelProps = {
 };
 
 /**
- * Shared corporate sign-in panel used by /login and remote-workspace gate.
+ * Shared sign-in panel used by /login and the remote-workspace gate.
  */
 export const AuthSignInPanel: React.FC<AuthSignInPanelProps> = ({
   title,
@@ -26,18 +27,18 @@ export const AuthSignInPanel: React.FC<AuthSignInPanelProps> = ({
   const { t } = useTranslation();
 
   return (
-    <div className="flex min-h-full items-center justify-center bg-white px-6 py-12">
+    <div className="flex min-h-full items-center justify-center bg-background px-6 py-12">
       <div className="flex w-full max-w-sm flex-col items-center gap-8">
-        <JeLogo className="h-16 w-auto" variant="light" />
+        <BrandLogo className="h-16 w-auto" />
 
         <div className="space-y-2 text-center">
-          <h1 className="text-2xl font-medium text-[#1f2937]">{title}</h1>
-          <p className="text-sm text-[#6b7280]">{description}</p>
+          <h1 className="text-2xl font-medium text-foreground">{title}</h1>
+          <p className="text-sm text-muted-foreground">{description}</p>
         </div>
 
         <div className="flex w-full flex-col gap-2">
           <Button
-            className="h-11 w-full bg-[#2563eb] text-white hover:bg-[#1d4ed8] border-0"
+            className="h-11 w-full bg-primary text-white hover:bg-primary/90 border-0"
             onClick={onLogin}
             disabled={busy}
           >
@@ -53,7 +54,7 @@ export const AuthSignInPanel: React.FC<AuthSignInPanelProps> = ({
           {onContinueWithout ? (
             <Button
               variant="ghost"
-              className="h-10 w-full text-[#6b7280] hover:bg-transparent hover:text-[#1f2937]"
+              className="h-10 w-full text-muted-foreground hover:bg-transparent hover:text-foreground"
               onClick={onContinueWithout}
               disabled={busy}
             >
@@ -61,6 +62,12 @@ export const AuthSignInPanel: React.FC<AuthSignInPanelProps> = ({
             </Button>
           ) : null}
         </div>
+
+        {branding.footer ? (
+          <p className="text-xs text-muted-foreground text-center">
+            {branding.footer}
+          </p>
+        ) : null}
       </div>
     </div>
   );

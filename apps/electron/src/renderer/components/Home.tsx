@@ -271,7 +271,7 @@ const Home: React.FC = () => {
         </div>
         <Button
           asChild
-          className="gap-2 shrink-0 bg-[#2563eb] hover:bg-[#1d4ed8] text-white border-0"
+          className="gap-2 shrink-0 bg-primary hover:bg-primary/90 text-white border-0"
         >
           <Link to="/servers/add">
             <IconPlus className="h-4 w-4" />
@@ -288,7 +288,7 @@ const Home: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t("common.search")}
-            className="w-full bg-background border border-border rounded-md h-10 px-3 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb]/35 focus:border-[#2563eb]/50"
+            className="w-full bg-background border border-border rounded-md h-10 px-3 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/35 focus:border-primary/50"
           />
           <IconSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         </div>
@@ -343,7 +343,7 @@ const Home: React.FC = () => {
               className={cn(
                 "h-9 w-9 p-0 rounded-[5px]",
                 serverViewMode === "list" &&
-                  "bg-background text-[#2563eb] shadow-sm",
+                  "bg-background text-primary shadow-sm",
               )}
               title="List View"
             >
@@ -356,7 +356,7 @@ const Home: React.FC = () => {
               className={cn(
                 "h-9 w-9 p-0 rounded-[5px]",
                 serverViewMode === "grid" &&
-                  "bg-background text-[#2563eb] shadow-sm",
+                  "bg-background text-primary shadow-sm",
               )}
               title="Grid View"
             >

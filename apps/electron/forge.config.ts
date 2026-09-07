@@ -7,6 +7,7 @@ import { FusesPlugin } from "@electron-forge/plugin-fuses";
 import { FuseV1Options, FuseVersion } from "@electron/fuses";
 
 import { mainConfig } from "./webpack.main.config";
+import { readBranding, brandingSlug } from "./webpack.branding";
 import { rendererConfig } from "./webpack.renderer.config";
 import { MakerDMG } from "@electron-forge/maker-dmg";
 import * as path from "path";
@@ -14,6 +15,9 @@ import * as path from "path";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 
+
+const branding = readBranding();
+const makerName = brandingSlug();
 
 const isMac = process.platform === "darwin";
 const hasSignIdentity = !!process.env.PUBLIC_IDENTIFIER;
@@ -49,15 +53,14 @@ const config: ForgeConfig = {
   },
   makers: [
     new MakerSquirrel({
-      name: "MCP-Router",
-      authors: "MCP Router",
-      description:
-        "MCP Router — centralized MCP gateway for Cursor, Claude, Hermes / NemoHermes, and other MCP clients.",
+      name: makerName,
+      authors: branding.appName,
+      description: `${branding.appName} — centralized MCP gateway for Cursor, Claude, agent runtimes, and other MCP clients.`,
       setupIcon: "./public/images/icon/icon.ico",
     }),
     new MakerDMG(
       {
-        name: "MCP-Router",
+        name: makerName,
         format: "ULFO",
         icon: "./public/images/icon/icon.icns",
       },

@@ -1,6 +1,7 @@
 import { app, Menu, Tray, nativeImage, type NativeImage } from "electron";
 import { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
 import { mainWindow } from "../../main";
+import { branding } from "@/branding";
 
 // Global tray instance
 let tray: Tray | null = null;
@@ -37,12 +38,12 @@ export function createTray(serverManager: MCPServerManager): Tray | null {
     const icon = getTrayIcon();
 
     tray = new Tray(icon);
-    tray.setToolTip("MCP Router");
+    tray.setToolTip(branding.appName);
   } catch (error) {
     console.error("Failed to create tray with icon, using default:", error);
     // As a last resort, use a system standard icon
     tray = new Tray(app.getPath("exe"));
-    tray.setToolTip("MCP Router");
+    tray.setToolTip(branding.appName);
   }
 
   // Set tray context menu
@@ -103,7 +104,7 @@ export function updateTrayContextMenu(serverManager: MCPServerManager): void {
 
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: "MCP Router",
+      label: branding.appName,
       click: () => {
         // Show the app in the Dock on macOS when clicked from context menu
         if (process.platform === "darwin" && app.dock) {

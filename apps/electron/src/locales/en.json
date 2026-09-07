@@ -28,7 +28,7 @@
     "description": "Optional. Local servers and the enterprise gateway work without an account.",
     "loginButton": "Sign in",
     "continueWithout": "Continue without signing in",
-    "footer": "MCP Router",
+    "footer": "",
     "requiredTitle": "Sign in required",
     "requiredDescription": "This remote workspace needs an account before you can continue."
   },
@@ -52,7 +52,7 @@
     "passwordMismatch": "Passwords do not match",
     "authFailed": "Could not authenticate",
     "signedInAs": "Signed in as",
-    "sessionDescription": "Lock the window when you leave. Hermes Bearer keys keep working.",
+    "sessionDescription": "Lock the window when you leave. Bearer keys keep working.",
     "changePassword": "Change password",
     "savePassword": "Update password",
     "passwordChanged": "Admin password updated",
@@ -244,7 +244,7 @@
     "expiryDays": "Days",
     "invalidCustomExpiry": "Enter a whole number of days (1 or more)",
     "localApps": "Local apps (optional)",
-    "localAppsDescription": "Write this router into Cursor, Claude, or Hermes on this Mac. Remote users should get a named key instead."
+    "localAppsDescription": "Write this router into Cursor, Claude, or an agent runtime on this Mac. Remote users should get a named key instead."
   },
   "serverDetails": {
     "serverName": "Server Name",
@@ -298,7 +298,7 @@
     "creating": "Creating...",
     "projectSettings": "Project Settings",
     "projectSettingsDescription": "Projects let you isolate the contexts where MCP servers are used.",
-    "projectSettingsCliHint": "Project routing for local CLI clients: npx -y @mcp_router/cli connect --project <project-name>. Hermes remote clients use HTTP Bearer to the Enterprise Gateway instead.",
+    "projectSettingsCliHint": "Project routing for local CLI clients: npx -y @mcp_router/cli connect --project <project-name>. Remote clients use HTTP Bearer to the Enterprise Gateway instead.",
     "contextOptimization": "Context Optimization",
     "searchStrategyBm25": "BM25"
   },

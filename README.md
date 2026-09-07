@@ -1,92 +1,120 @@
-# MCP Router
+# MCP Router — access-controlled fork
 
-A fork of [MCP Router](https://github.com/mcp-router/mcp-router). Desktop app that aggregates MCP servers (Excel, PowerPoint, and others) and exposes them as a single HTTP gateway for Hermes / NemoHermes and other MCP clients.
+A fork of [MCP Router](https://github.com/mcp-router/mcp-router) that turns the local
+aggregator into something a team can point several machines at: per-key permissions on
+individual MCP servers and tools, expiring Bearer keys, a desktop admin lock, and a
+white-label branding layer so a deployment can carry its own name and colours.
 
-Repo: https://github.com/meghamshb2006/mcprouter
+Upstream aggregates MCP servers and exposes them to local clients. That model assumes one
+trusted user at one desktop. The moment the HTTP gateway is reachable from other machines,
+"whoever holds the URL gets every tool" stops being acceptable — which is what this fork
+is about.
 
-## What it does
-
-Operators run **MCP Router** on a machine that can reach the MCP servers (typically an Azure Windows VM with Office). Clients never open this UI. They call:
-
-```text
-POST http://HOST:3282/mcp
-Authorization: Bearer <token issued in Keys>
+```mermaid
+flowchart LR
+  C1[Cursor] --> G
+  C2[Claude Desktop] --> G
+  C3[Agent runtime] --> G
+  G["HTTP gateway<br/>POST /mcp<br/>Authorization: Bearer key"] --> P{"Per-key grants<br/>server + tool"}
+  P -->|granted| S1[Excel MCP]
+  P -->|granted| S2[PowerPoint MCP]
+  P -->|denied 401/403| X[Rejected]
+  A["Admin UI<br/>(locked separately)"] -.->|issues keys,<br/>grants access| P
 ```
 
-The Electron window is for IT only: add servers, power them LIVE, issue keys, and grant access.
+---
 
-## Features
+## What this fork adds
+
+### Per-key access control
+
+A key is not an all-access pass. Each key carries an explicit grant list: which MCP servers
+it may reach, and which tools within them.
+
+- **New keys start with nothing granted.** Access is added deliberately, not revoked after the fact.
+- **Tool lists are cached**, so permissions can be granted against a server that is currently powered off. Execution still requires it to be LIVE — the cache decides what you can *grant*, never what you can *run*.
+- Denied calls fail at the gateway, before the request reaches the server.
+
+### Expiring keys
+
+Keys default to a 30-day lifetime, selectable at issue time (1 day, 1 week, 30 days, 90 days,
+custom, or never). Expired keys are rejected on `/mcp` and cannot list or call tools. Keys
+issued before expiry enforcement was added stay valid until reissued, so turning this on does
+not lock out a running deployment.
 
 ### Desktop admin lock
 
-First launch creates a local administrator (username + password, stored as an argon2 hash in `shared-config.json`). Later launches show an unlock screen.
+First launch creates a local administrator; the password is stored as an argon2 hash. Later
+launches show an unlock screen.
 
-- **Lock** in the sidebar or Settings locks the window.
-- HTTP `/mcp` **keeps running** while the UI is locked.
-- Lost password: delete the `admin` object in `shared-config.json` and restart.
+The lock covers the **UI, not the service** — locking the window does not stop the HTTP
+gateway. That is deliberate: on a shared machine you want the console locked while clients
+keep working. Lost password recovery is documented and local-only.
 
-### MCP servers
+### White-label branding
 
-Add local commands, remote HTTP MCP endpoints, JSON configs, or DXT packages. Power each server **LIVE** / **OFF**. Group servers into **Projects**. Tool lists are cached so you can grant permissions even when a server is stopped; execution still requires LIVE.
+One config file sets the application name, window title, wordmark, icon and accent colour.
+The default build is unbranded — no organisation's marks ship in this repository.
 
-### Keys (Bearer tokens)
-
-**Keys** issues one token per person or client.
-
-- New keys start with **no MCP access**. Open **Permissions** and grant servers, then tools.
-- Legacy keys without a `toolAccess` field still allow all tools on granted servers.
-- Default expiry is **30 days**. When issuing a key, choose 1 day, 1 week, 30 days, 90 days, a custom number of days, or never.
-- Keys issued before expiry enforcement stay valid until you re-issue them.
-- Expired keys are rejected on `/mcp` (401).
-
-**Client setup** copies native HTTP YAML (`url` + `Authorization: Bearer`). Do **not** use `@mcp_router/cli` for Azure — npm 0.2.0 ignores `--url`.
-
-### Enterprise Gateway
-
-By default the aggregator binds `127.0.0.1:3282`.
-
-In **Settings → Enterprise Gateway**:
-
-- Enable the gateway
-- Listen address `0.0.0.0`, port `3282` (or your choice)
-- **Client endpoint URL**, e.g. `http://HOST:3282/mcp`
-
-Save and restart. Open NSG / Windows Firewall for that port.
-
-Env overrides: `MCPR_HTTP_HOST`, `MCPR_HTTP_PORT`, `MCPR_GATEWAY_PUBLIC_URL`.
-
-`GET /health` is unauthenticated. `/mcp` and `/mcp/status` require Bearer.
-
-### Also in the app
-
-- **Request logs** — tool calls and activity
-- **Cloud Sync** — optional end-to-end encrypted workspace sync
-- **Workflows / hooks** and **Skills** — available as routes; nav focuses on servers, keys, logs, and settings
-
-## Hermes config
-
-```yaml
-mcp_servers:
-  mcp-router:
-    url: "http://HOST:3282/mcp"
-    headers:
-      Authorization: "Bearer <token from MCP Router>"
+```json
+{
+  "appName": "MCP Router",
+  "colors": { "accent": "#2563eb", "foreground": "#1f2937" },
+  "logo": "public/images/brand/logo.svg",
+  "mark": "public/images/brand/mark.svg"
+}
 ```
 
-## Develop
+Drop in your own SVGs and the title bar, installer metadata and theme follow. See
+[`docs/BRANDING.md`](docs/BRANDING.md).
+
+> Use only marks you have the right to use. Do not commit a third party's logo artwork.
+
+---
+
+## Where the code comes from
+
+This repository has three layers, and `git log` separates them:
+
+| Layer | |
+|---|---|
+| **Upstream** | [mcp-router/mcp-router](https://github.com/mcp-router/mcp-router) by fjm2u — the Electron app, the aggregator, projects, tool catalog, cloud sync. The large majority of the code. |
+| **Remote-deployment path** | The Windows/Azure packaging workflow and the initial agent HTTP client wiring were contributed by a collaborator during the same internship. |
+| **Access control** | Per-key server and tool grants, cached tool lists, Bearer key expiry, the desktop admin lock, and the branding layer. Mine — `git log --author=Xr810`. |
+
+The upstream project's licence and attribution are preserved. This fork is not affiliated
+with or endorsed by the upstream authors.
+
+---
+
+## Run it
 
 ```bash
 pnpm install
-pnpm --filter @mcp_router/electron dev
+pnpm dev
 ```
 
-Do **not** run `pnpm dev` on a 4 GB Azure VM (webpack OOMs). Build the Windows installer in GitHub Actions (**Windows Azure Package**) and install the artifact on the VM.
+Package a desktop build:
 
-## Docs
+```bash
+pnpm --filter @mcp_router/electron make
+```
 
-- Azure + Hermes runbook: [`docs/JE_AZURE_HERMES.md`](docs/JE_AZURE_HERMES.md)
-- Security notes: [`docs/SECURITY.md`](docs/SECURITY.md)
+Clients connect over HTTP:
 
-## License
+```text
+POST http://HOST:3282/mcp
+Authorization: Bearer <key issued in the Keys panel>
+```
 
-See [LICENSE.md](LICENSE.md). Upstream MCP Router attribution retained.
+Local clients on the same machine can still use localhost directly.
+
+For deploying the gateway on a remote VM — including building the installer in CI when the
+VM is too small to run a webpack build — see [`docs/REMOTE_DEPLOYMENT.md`](docs/REMOTE_DEPLOYMENT.md).
+
+---
+
+## Licence
+
+Upstream licence applies; see `LICENSE.md`. Additions in this fork are released under the
+same terms.

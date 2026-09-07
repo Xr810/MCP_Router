@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Input, Label } from "@mcp_router/ui";
-import { JeLogo } from "@/renderer/components/brand/JeLogo";
+import { BrandLogo } from "@/renderer/components/brand/BrandLogo";
+import { branding } from "@/branding";
 import { Loader2 } from "lucide-react";
 import { usePlatformAPI } from "@/renderer/platform-api";
 import type { AdminStatus } from "@mcp_router/shared";
@@ -51,18 +52,18 @@ export const AdminLockScreen: React.FC<AdminLockScreenProps> = ({
   };
 
   return (
-    <div className="flex min-h-full items-center justify-center bg-white px-6 py-12">
+    <div className="flex min-h-full items-center justify-center bg-background px-6 py-12">
       <form
         onSubmit={handleSubmit}
         className="flex w-full max-w-sm flex-col items-center gap-8"
       >
-        <JeLogo className="h-16 w-auto" variant="light" />
+        <BrandLogo className="h-16 w-auto" />
 
         <div className="space-y-2 text-center">
-          <h1 className="text-2xl font-medium text-[#1f2937]">
+          <h1 className="text-2xl font-medium text-foreground">
             {mode === "setup" ? t("admin.setupTitle") : t("admin.unlockTitle")}
           </h1>
-          <p className="text-sm text-[#6b7280]">
+          <p className="text-sm text-muted-foreground">
             {mode === "setup"
               ? t("admin.setupDescription")
               : t("admin.unlockDescription")}
@@ -114,7 +115,7 @@ export const AdminLockScreen: React.FC<AdminLockScreenProps> = ({
 
           <Button
             type="submit"
-            className="h-11 w-full bg-[#2563eb] text-white hover:bg-[#1d4ed8] border-0"
+            className="h-11 w-full bg-primary text-white hover:bg-primary/90 border-0"
             disabled={busy}
           >
             {busy ? (
@@ -130,15 +131,21 @@ export const AdminLockScreen: React.FC<AdminLockScreenProps> = ({
           </Button>
 
           {mode === "unlock" ? (
-            <p className="text-xs text-[#6b7280] leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               {t("admin.forgotPassword")}
             </p>
           ) : (
-            <p className="text-xs text-[#6b7280] leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               {t("admin.passwordHint")}
             </p>
           )}
         </div>
+
+        {branding.footer ? (
+          <p className="text-xs text-muted-foreground text-center">
+            {branding.footer}
+          </p>
+        ) : null}
       </form>
     </div>
   );

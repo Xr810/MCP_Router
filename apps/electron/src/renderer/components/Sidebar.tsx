@@ -12,7 +12,8 @@ import { useTranslation } from "react-i18next";
 import { useWorkspaceStore } from "@/renderer/stores";
 import { useAdminUiStore } from "@/renderer/stores/admin-store";
 import { usePlatformAPI } from "@/renderer/platform-api";
-import { JeLogo } from "@/renderer/components/brand/JeLogo";
+import { BrandLogo } from "@/renderer/components/brand/BrandLogo";
+import { branding } from "@/branding";
 import {
   Sidebar,
   SidebarContent,
@@ -82,9 +83,9 @@ const SidebarComponent: React.FC = () => {
           to="/servers"
           className="flex flex-col gap-1 no-underline px-2 py-2 hover:opacity-90"
         >
-          <JeLogo className="h-8 w-auto max-w-[168px]" />
+          <BrandLogo className="h-8 w-auto max-w-[168px]" />
           <span className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
-            MCP Router
+            {branding.appName}
           </span>
         </Link>
       </SidebarHeader>
@@ -160,7 +161,7 @@ const SidebarComponent: React.FC = () => {
             </SidebarGroup>
           </Collapsible>
 
-          {/* Skills / agent paths kept as routes but hidden from nav */}
+          {/* Skills / agent paths kept as routes but hidden from the nav */}
         </SidebarMenu>
       </SidebarContent>
 

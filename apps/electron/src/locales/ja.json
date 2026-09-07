@@ -29,7 +29,7 @@
     "description": "任意です。アカウントなしでもローカルサーバーとエンタープライズゲートウェイは利用できます。",
     "loginButton": "サインイン",
     "continueWithout": "サインインせずに続ける",
-    "footer": "MCP Router",
+    "footer": "",
     "requiredTitle": "サインインが必要です",
     "requiredDescription": "このリモートワークスペースを使うにはサインインが必要です。"
   },
@@ -53,7 +53,7 @@
     "passwordMismatch": "パスワードが一致しません",
     "authFailed": "認証に失敗しました",
     "signedInAs": "ログイン中",
-    "sessionDescription": "離席時は画面をロックしてください。Hermes の Bearer キーはそのまま使えます。",
+    "sessionDescription": "離席時は画面をロックしてください。Bearer キーはそのまま使えます。",
     "changePassword": "パスワード変更",
     "savePassword": "パスワードを更新",
     "passwordChanged": "管理者パスワードを更新しました",
@@ -234,7 +234,7 @@
     "expiryDays": "日数",
     "invalidCustomExpiry": "1以上の整数の日数を入力してください",
     "localApps": "ローカルアプリ（任意）",
-    "localAppsDescription": "この Mac の Cursor / Claude / Hermes をこのルーターに接続します。リモートユーザーには名前付きキーを発行してください。"
+    "localAppsDescription": "この Mac の Cursor / Claude / エージェントをこのルーターに接続します。リモートユーザーには名前付きキーを発行してください。"
   },
   "serverDetails": {
     "serverName": "サーバー名",

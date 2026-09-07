@@ -648,7 +648,7 @@ const McpAppsManager: React.FC = () => {
           ) : null}
           <Button
             type="submit"
-            className="h-10 bg-[#2563eb] hover:bg-[#1d4ed8] text-white border-0"
+            className="h-10 bg-primary hover:bg-primary/90 text-white border-0"
           >
             {t("mcpApps.addCustomApp")}
           </Button>
@@ -718,7 +718,7 @@ const McpAppsManager: React.FC = () => {
                         <TableCell>
                           <button
                             type="button"
-                            className="max-w-[220px] text-left rounded-md border border-border bg-muted/20 px-2 py-1 font-mono text-[11px] text-muted-foreground truncate hover:text-foreground hover:border-[#2563eb]/40"
+                            className="max-w-[220px] text-left rounded-md border border-border bg-muted/20 px-2 py-1 font-mono text-[11px] text-muted-foreground truncate hover:text-foreground hover:border-primary/40"
                             title={t("mcpApps.copyToken")}
                             onClick={() => copyToken(app.token!)}
                           >
@@ -817,7 +817,7 @@ const McpAppsManager: React.FC = () => {
                         <Button
                           onClick={() => handleAddConfig(app.name)}
                           size="sm"
-                          className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white border-0"
+                          className="bg-primary hover:bg-primary/90 text-white border-0"
                           disabled={!app.installed}
                         >
                           {app.installed

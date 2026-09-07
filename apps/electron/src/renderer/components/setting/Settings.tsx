@@ -20,7 +20,7 @@ import type { CloudSyncStatus } from "@mcp_router/shared";
 import { cn } from "@/renderer/utils/tailwind-utils";
 
 const fieldClass =
-  "h-10 bg-background border-border focus-visible:ring-[#2563eb]/35 focus-visible:border-[#2563eb]/50";
+  "h-10 bg-background border-border focus-visible:ring-primary/35 focus-visible:border-primary/50";
 
 const SectionLabel: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -404,7 +404,7 @@ const Settings: React.FC = () => {
               <div>
                 <Button
                   size="sm"
-                  className="h-9 bg-[#2563eb] hover:bg-[#1d4ed8] text-white border-0"
+                  className="h-9 bg-primary hover:bg-primary/90 text-white border-0"
                   onClick={handleChangeAdminPassword}
                   disabled={
                     isChangingAdminPassword ||
@@ -447,7 +447,7 @@ const Settings: React.FC = () => {
             <div className="border-t border-border py-3.5 space-y-3">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 min-w-0">
-                  <IconCloud className="h-4 w-4 text-[#2563eb] shrink-0" />
+                  <IconCloud className="h-4 w-4 text-primary shrink-0" />
                   <div className="min-w-0">
                     <p className="text-sm font-medium">
                       {t("settings.cloudSync")}
@@ -521,7 +521,7 @@ const Settings: React.FC = () => {
                           disabled={
                             isSettingPassphrase || !cloudSyncPassphrase.trim()
                           }
-                          className="h-10 bg-[#2563eb] hover:bg-[#1d4ed8] text-white border-0"
+                          className="h-10 bg-primary hover:bg-primary/90 text-white border-0"
                         >
                           {isSettingPassphrase
                             ? t("common.saving")
@@ -600,7 +600,7 @@ const Settings: React.FC = () => {
             <Button
               onClick={handleSaveRemoteMcpSettings}
               disabled={isSavingSettings}
-              className="h-10 px-5 bg-[#2563eb] hover:bg-[#1d4ed8] text-white border-0"
+              className="h-10 px-5 bg-primary hover:bg-primary/90 text-white border-0"
             >
               {isSavingSettings ? t("common.saving") : t("common.save")}
             </Button>

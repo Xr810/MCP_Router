@@ -1,6 +1,8 @@
 import type { Configuration } from "webpack";
 import * as path from "path";
 
+import { brandingAliases } from "./webpack.branding";
+
 import { rules } from "./webpack.rules";
 import { plugins } from "./webpack.plugins";
 
@@ -19,6 +21,7 @@ export const mainConfig: Configuration = {
     extensions: [".js", ".ts", ".jsx", ".tsx", ".css", ".json"],
     modules: ["node_modules", path.resolve(__dirname, "../../node_modules")],
     alias: {
+      ...brandingAliases(),
       "@": path.resolve(__dirname, "src"),
       "@mcp_router/shared": path.resolve(
         __dirname,

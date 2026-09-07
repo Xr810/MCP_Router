@@ -18,10 +18,10 @@ const getHeatColor = (count: number, maxCount: number): string => {
   if (count === 0 || maxCount === 0) return "bg-muted/40";
 
   const intensity = count / maxCount;
-  if (intensity >= 0.75) return "bg-[#2563eb]";
-  if (intensity >= 0.5) return "bg-[#2563eb]/70";
-  if (intensity >= 0.25) return "bg-[#2563eb]/40";
-  return "bg-[#2563eb]/20";
+  if (intensity >= 0.75) return "bg-primary";
+  if (intensity >= 0.5) return "bg-primary/70";
+  if (intensity >= 0.25) return "bg-primary/40";
+  return "bg-primary/20";
 };
 
 /**
@@ -123,7 +123,7 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
     return (
       <div className="rounded-lg border border-border p-4">
         <div className="flex justify-center items-center h-24">
-          <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#2563eb] border-t-transparent" />
+          <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent" />
         </div>
       </div>
     );
@@ -197,7 +197,7 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
                     className={`
                       w-[12px] h-[12px] rounded-sm transition-all
                       ${getHeatColor(count, maxDailyCount)}
-                      ${isSelected ? "ring-2 ring-[#2563eb] ring-offset-1 ring-offset-background" : ""}
+                      ${isSelected ? "ring-2 ring-primary ring-offset-1 ring-offset-background" : ""}
                       hover:ring-1 hover:ring-muted-foreground
                     `}
                     title={`${formatDateShort(date, t("locale", "en-US"))}: ${count} ${t("logs.activity.heatmap.activities", "activities")}`}
@@ -213,10 +213,10 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
         <span>{t("logs.activity.heatmap.less", "Less")}</span>
         <div className="flex gap-[3px]">
           <div className="w-[12px] h-[12px] rounded-sm bg-muted/40" />
-          <div className="w-[12px] h-[12px] rounded-sm bg-[#2563eb]/20" />
-          <div className="w-[12px] h-[12px] rounded-sm bg-[#2563eb]/40" />
-          <div className="w-[12px] h-[12px] rounded-sm bg-[#2563eb]/70" />
-          <div className="w-[12px] h-[12px] rounded-sm bg-[#2563eb]" />
+          <div className="w-[12px] h-[12px] rounded-sm bg-primary/20" />
+          <div className="w-[12px] h-[12px] rounded-sm bg-primary/40" />
+          <div className="w-[12px] h-[12px] rounded-sm bg-primary/70" />
+          <div className="w-[12px] h-[12px] rounded-sm bg-primary" />
         </div>
         <span>{t("logs.activity.heatmap.more", "More")}</span>
       </div>

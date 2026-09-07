@@ -49,7 +49,7 @@ function parseArgs(args: string[]): {
   baseUrl: string;
   project?: string | null;
 } {
-  // JE / Azure: MCPR_URL overrides localhost default when --url is omitted
+  // MCPR_URL overrides the localhost default when --url is omitted
   const envUrl = process.env.MCPR_URL?.trim();
   let baseUrl = envUrl ? normalizeBaseUrl(envUrl) : DEFAULT_BASE_URL;
   let project: string | null = null;

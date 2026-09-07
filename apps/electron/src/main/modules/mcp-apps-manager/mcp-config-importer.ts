@@ -96,7 +96,7 @@ function extractCodexTokenFromToml(tomlText: string): string | null {
 
 /**
  * Hermes ~/.hermes/config.yaml is YAML (mcp_servers), not JSON.
- * Accepts HTTP style (url + Authorization Bearer) and legacy CLI connect.
+ * Accepts the HTTP style (url + Authorization Bearer) and legacy CLI connect.
  */
 export function extractHermesConfigInfo(yamlText: string): {
   hasMcpConfig: boolean;

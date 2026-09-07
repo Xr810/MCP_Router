@@ -22,8 +22,8 @@ const getWordColor = (value: number, maxValue: number): string => {
   if (maxValue === 0) return "text-muted-foreground";
 
   const ratio = value / maxValue;
-  if (ratio >= 0.8) return "text-[#2563eb]";
-  if (ratio >= 0.6) return "text-[#2563eb]/80";
+  if (ratio >= 0.8) return "text-primary";
+  if (ratio >= 0.6) return "text-primary/80";
   if (ratio >= 0.4) return "text-foreground/80";
   return "text-muted-foreground";
 };
@@ -45,7 +45,7 @@ const QueryWordCloud: React.FC<QueryWordCloudProps> = ({
     return (
       <div className="rounded-lg border border-border p-4 h-full">
         <div className="flex justify-center items-center h-24">
-          <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#2563eb] border-t-transparent" />
+          <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent" />
         </div>
       </div>
     );

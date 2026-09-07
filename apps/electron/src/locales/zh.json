@@ -27,7 +27,7 @@
     "description": "可选。不登录也可使用本地服务器和企业网关。",
     "loginButton": "登录",
     "continueWithout": "不登录，继续使用",
-    "footer": "MCP Router",
+    "footer": "",
     "requiredTitle": "需要登录",
     "requiredDescription": "此远程工作区需要登录后才能继续。"
   },
@@ -51,7 +51,7 @@
     "passwordMismatch": "两次输入的密码不一致",
     "authFailed": "认证失败",
     "signedInAs": "当前管理员",
-    "sessionDescription": "离开时请锁定窗口。Hermes 使用的 Bearer key 不受影响。",
+    "sessionDescription": "离开时请锁定窗口。Bearer key 不受影响。",
     "changePassword": "修改密码",
     "savePassword": "更新密码",
     "passwordChanged": "管理员密码已更新",
@@ -202,7 +202,7 @@
     "expiryDays": "天数",
     "invalidCustomExpiry": "请输入大于等于 1 的整数天数",
     "localApps": "本机应用（可选）",
-    "localAppsDescription": "把本机 Cursor / Claude / Hermes 接到这台路由器。远程用户请发命名密钥。"
+    "localAppsDescription": "把本机 Cursor / Claude / 智能体 接到这台路由器。远程用户请发命名密钥。"
   },
   "serverDetails": {
     "serverName": "服务器名称",

@@ -176,7 +176,7 @@ const App: React.FC = () => {
   const LoadingIndicator = () => (
     <div className="flex h-full items-center justify-center bg-background">
       <div className="text-center">
-        <IconProgress className="h-10 w-10 mx-auto animate-spin text-[#2563eb]" />
+        <IconProgress className="h-10 w-10 mx-auto animate-spin text-primary" />
         <p className="mt-4 text-muted-foreground">{t("common.loading")}</p>
       </div>
     </div>

@@ -24,14 +24,14 @@ const Toaster = ({ ...props }: ToasterProps) => {
           description:
             "group-[.toast]:text-xs group-[.toast]:text-muted-foreground",
           success:
-            "group-[.toaster]:border-l-4 group-[.toaster]:border-l-[#2563eb]",
+            "group-[.toaster]:border-l-4 group-[.toaster]:border-l-primary",
           error:
             "group-[.toaster]:border-l-4 group-[.toaster]:border-l-destructive",
           info: "group-[.toaster]:border-l-4 group-[.toaster]:border-l-border",
           warning:
             "group-[.toaster]:border-l-4 group-[.toaster]:border-l-amber-500",
           actionButton:
-            "group-[.toast]:bg-[#2563eb] group-[.toast]:text-white group-[.toast]:rounded-md",
+            "group-[.toast]:bg-primary group-[.toast]:text-white group-[.toast]:rounded-md",
           cancelButton:
             "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground group-[.toast]:rounded-md",
         },

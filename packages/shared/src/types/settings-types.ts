@@ -72,7 +72,7 @@ export interface AppSettings {
   cloudSync?: CloudSyncState;
 
   /**
-   * JE / Azure: allow remote MCP clients (Hermes) to reach the aggregator.
+   * Allow remote MCP clients to reach the aggregator.
    * When true, HTTP server binds to mcpHttpHost (default 0.0.0.0).
    * Default: false (localhost only — Cursor/Claude unchanged).
    */
@@ -93,8 +93,8 @@ export interface AppSettings {
   mcpHttpPort?: number;
 
   /**
-   * Public URL Hermes should use (e.g. https://HOST:3282/mcp).
-   * Written into Hermes config when set. Does not change Cursor/Claude local configs.
+   * Public URL remote clients should use (e.g. https://HOST:3282/mcp).
+   * Written into the client config when set. Does not change Cursor/Claude local configs.
    */
   mcpGatewayPublicUrl?: string;
 }
@@ -113,7 +113,7 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   analyticsEnabled: false,
   autoUpdateEnabled: true,
   showWindowOnStartup: true,
-  // corporate site is light-first; default the product to light
+  // Default the product to light
   theme: "light",
   cloudSync: {
     enabled: false,

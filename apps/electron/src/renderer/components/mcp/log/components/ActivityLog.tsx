@@ -73,7 +73,7 @@ const ExecutionRow: React.FC<{
           size={14}
           className={cn(
             "shrink-0",
-            hasError ? "text-destructive" : "text-[#2563eb]",
+            hasError ? "text-destructive" : "text-primary",
           )}
         />
         <span
@@ -90,7 +90,7 @@ const ExecutionRow: React.FC<{
         {hasError ? (
           <IconX size={14} className="text-destructive shrink-0" />
         ) : (
-          <IconCheck size={14} className="text-[#2563eb] shrink-0" />
+          <IconCheck size={14} className="text-primary shrink-0" />
         )}
       </button>
 
@@ -228,7 +228,7 @@ const getActivityIcon = (
 ): React.ReactNode => {
   const iconClass = cn(
     "shrink-0",
-    hasError ? "text-destructive" : "text-[#2563eb]",
+    hasError ? "text-destructive" : "text-primary",
   );
 
   switch (type) {
@@ -321,7 +321,7 @@ const StandaloneCard: React.FC<{
         {hasError ? (
           <IconX size={14} className="text-destructive shrink-0" />
         ) : (
-          <IconCheck size={14} className="text-[#2563eb] shrink-0" />
+          <IconCheck size={14} className="text-primary shrink-0" />
         )}
       </button>
 
@@ -389,7 +389,7 @@ const ActivityLog: React.FC<ActivityLogProps> = ({
     return (
       <div className="rounded-lg border border-border p-4 h-full">
         <div className="flex justify-center items-center h-24">
-          <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#2563eb] border-t-transparent" />
+          <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent" />
         </div>
       </div>
     );

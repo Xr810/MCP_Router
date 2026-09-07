@@ -25,7 +25,9 @@ import {
 } from "@/main/modules/settings/settings.service";
 import { getSkillService } from "@/main/modules/skills/skills.service";
 
-const APP_DISPLAY_NAME = "MCP Router";
+import { branding } from "@/branding";
+
+const APP_DISPLAY_NAME = branding.appName;
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -279,7 +281,7 @@ async function initMCPServices(): Promise<void> {
   // AggregatorServerの初期化
   aggregatorServer = new AggregatorServer(serverManager, toolCatalogService);
 
-  // HTTPサーバーの初期化とスタート（Azure: remote bind via settings/env）
+  // HTTPサーバーの初期化とスタート（remote bind via settings/env）
   const settings = getSettingsService().getSettings();
   const bind = resolveMcpHttpBind(settings);
   console.log(
@@ -336,7 +338,7 @@ function initUI({
 async function initApplication(): Promise<void> {
   // 環境設定を初期化
   initializeEnvironment();
-  // Allow Roboto from Google Fonts (same as example.com)
+  // Allow Roboto from Google Fonts (renderer typeface)
   const DEV_CSP = `
     default-src 'self' 'unsafe-inline' http://localhost:* ws://localhost:*;
     script-src 'self' 'unsafe-eval' 'unsafe-inline';

@@ -81,7 +81,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
               onClick={() => setTheme(value)}
               className={
                 theme === value
-                  ? "h-9 gap-1.5 rounded-[5px] bg-background text-[#2563eb] shadow-sm"
+                  ? "h-9 gap-1.5 rounded-[5px] bg-background text-primary shadow-sm"
                   : "h-9 gap-1.5 rounded-[5px] text-muted-foreground"
               }
             >

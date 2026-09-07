@@ -4,7 +4,8 @@ import { Settings } from "lucide-react";
 import { Button } from "@mcp_router/ui";
 import { useWorkspaceStore } from "@/renderer/stores/workspace-store";
 import { usePlatformAPI } from "@/renderer/platform-api";
-import { JeLogo } from "@/renderer/components/brand/JeLogo";
+import { BrandLogo } from "@/renderer/components/brand/BrandLogo";
+import { branding } from "@/branding";
 import { ThemeToggle } from "@/renderer/components/ThemeToggle";
 import { AccountControl } from "@/renderer/components/workspace/AccountControl";
 
@@ -31,12 +32,12 @@ export function TitleBar() {
     >
       <div className={platform === "darwin" ? "w-20" : "w-4"} />
 
-      {/* Official wordmark — matches example.com */}
+      {/* Wordmark from branding.config.json */}
       <div className="flex-1 flex items-center justify-center min-w-0 px-2">
         <div className="flex items-center gap-3 min-w-0">
-          <JeLogo className="h-5 max-w-[11rem] sm:max-w-[14rem]" />
+          <BrandLogo className="h-5 max-w-[11rem] sm:max-w-[14rem]" />
           <span className="hidden sm:inline text-[11px] uppercase tracking-[0.18em] text-muted-foreground border-l border-border pl-3 shrink-0">
-            MCP Router
+            {branding.appName}
           </span>
         </div>
       </div>
