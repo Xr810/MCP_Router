@@ -18,6 +18,8 @@ require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 
 const branding = readBranding();
 const makerName = brandingSlug();
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { version } = require("./package.json");
 
 const isMac = process.platform === "darwin";
 const hasSignIdentity = !!process.env.PUBLIC_IDENTIFIER;
@@ -64,7 +66,9 @@ const config: ForgeConfig = {
     }),
     new MakerDMG(
       {
-        name: makerName,
+        // Versioned, so DMGs from different releases do not collide in a
+        // downloads folder.
+        name: `${makerName}-${version}`,
         format: "ULFO",
         icon: "./public/images/icon/icon.icns",
       },

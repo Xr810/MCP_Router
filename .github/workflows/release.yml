@@ -2,7 +2,7 @@
 # Release, so a deployment can download a packaged build without needing an
 # Actions login or racing the artifact retention window.
 #
-# Trigger by pushing a tag:  git tag v0.6.3 && git push origin v0.6.3
+# Trigger by pushing a tag:  git tag v1.0.0 && git push origin v1.0.0
 #
 # The release is created as a DRAFT. Review the assets, then publish it by
 # hand. The Sustainable Use License allows distribution only free of charge
